@@ -14,9 +14,19 @@ Quand GitHub Pages est activé, rendez-vous sur :
 - Cadrage du visage assisté par MediaPipe
 - Détourage du fond par IA avec @imgly/background-removal
 - Badges salariés : logo, nom, fonction, matricule, portrait, formats horizontal 86 × 54 mm et vertical 54 × 86 mm, recto employé et verso entreprise cliquables
-- Cartes de visite : modèles, logo, recto et verso cliquables, format 90 × 50 mm
+- Cartes de visite : **4 modèles Prestige, Corporate, Minimal et Luxe**, choix avec miniatures cliquables, couleurs personnalisables, logo, recto et verso cliquables, format 90 × 50 mm
 - Impression de badges et cartes de visite en **recto-verso sur deux pages A4**, à l'échelle 100 %, avec choix de feuille portrait/paysage, quantité et positions miroirs pour l'alignement au découpage
 - Interface entièrement en français, adaptée aux PC et aux mobiles
+
+## Essayer les nouveaux modèles
+
+1. Ouvrez l'atelier **Cartes de visite**.
+2. Cliquez sur l'un des quatre modèles : **Prestige**, **Corporate**, **Minimal** ou **Luxe**.
+3. Modifiez le nom, le poste, les coordonnées, le logo et la couleur du thème.
+4. Cliquez sur les miniatures **Recto** et **Verso** pour voir les deux faces de la carte avant impression.
+5. Téléchargez une face en PNG ou créez la planche A4 recto-verso. L'export PNG est généré à 300 DPI.
+
+Le logiciel travaille dans le navigateur sans compte et les logos importés ne sont pas envoyés vers un backend PhotoID.
 
 ## Impression recto-verso
 
