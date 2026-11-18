@@ -14,7 +14,7 @@ Quand GitHub Pages est activé, rendez-vous sur :
 - Cadrage du visage assisté par MediaPipe
 - Détourage du fond par IA avec @imgly/background-removal
 - Badges salariés : logo, nom, fonction, matricule, portrait, formats horizontal 86 × 54 mm et vertical 54 × 86 mm, recto employé et verso entreprise cliquables
-- **QR code de matricule intégré** : génération réelle en JavaScript depuis le champ matricule (ex. `MTRC-2026-001`), mise à jour immédiate, impression sur le recto à droite du badge horizontal et en bas à droite du badge vertical. Un bouton permet de créer un nouveau matricule aléatoire au format `MTRC-AAAA-XXXXXXXX`.
+- **QR d'identité professionnelle** : génère un lien ouvrant la fiche du salarié (nom, entreprise, fonction, matricule, validité) et se met à jour quand un champ change. Un bouton permet de créer un nouveau matricule aléatoire.
 - **Design premium optimisé pour la lisibilité** : photo de l'employé découpée en cercle au recto, nom/fonction et matricule mieux contrastés et agrandis, police sans-serif soignée, matricule lisible sur les deux faces, QR de matricule présent sur le recto et le verso, en horizontal comme en vertical.
 - **Logo d’entreprise mis en valeur** : plaque blanche à coins arrondis dans l’en-tête, zone logo agrandie et recentrage des images avec marges transparentes ou blanches (l’image originale n’est pas modifiée).
 - **Crédit BTDIGIT au verso** : « Créé par BTDIGIT » et `hamapixel.github.io/nexora-technologies/` sur les deux orientations de badge. Le pied de page du logiciel renvoie aussi au site [BTDIGIT](https://hamapixel.github.io/nexora-technologies/).
@@ -32,14 +32,23 @@ Quand GitHub Pages est activé, rendez-vous sur :
 
 Le logiciel travaille dans le navigateur sans compte et les logos importés ne sont pas envoyés vers un backend PhotoID.
 
-## QR code du matricule (hors ligne)
+## Lecture de l'identité professionnelle via le QR
 
-- La bibliothèque [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) est incluse dans `vendor/qrcode-generator.js` (licence MIT conservée dans `vendor/LICENSE.qrcode-generator.txt`). **Aucun service QR distant** n'est appelé.
-- Dans **Badges entreprise**, saisissez le matricule ou cliquez sur **Générer un nouveau matricule**. Le QR code change automatiquement lorsque le matricule change.
-- Le QR code contient **uniquement la chaîne du matricule**. Un téléphone équipé d'un lecteur QR affichera par exemple `MTRC-2026-001`.
-- Les mêmes modules QR figurent sur le PNG exporté et la planche A4 recto-verso.
-- Les codes générés aléatoirement réduisent les risques de collision mais **ne garantissent pas une unicité absolue entre entreprises ou appareils**. Ils ne créent aucun registre de salariés.
-- **Scanner le QR n'authentifie pas le badge** : une véritable vérification de statut ou d'identité nécessiterait un répertoire d'employés et un système d'authentification géré par l'entreprise.
+Le QR code intégré au badge ouvre la page **https://hamapixel.github.io/photoID/i.html** avec les informations du titulaire encodées dans le lien.
+
+1. Dans **Badges entreprise**, renseignez le nom, la fonction, l'entreprise, le matricule et la validité.
+2. Cliquez sur **Tester la fiche QR** pour voir exactement la page qui s'ouvrira après le scan.
+3. Cliquez sur **Copier le lien** pour partager ou tester depuis un téléphone.
+4. Exportez le badge en PNG ou imprimez-le : le **même QR code dynamique** apparaît au recto et au verso, horizontal ou vertical.
+5. Scannez avec l'appareil photo d'un smartphone connecté à Internet.
+
+La fiche présente **nom, fonction, entreprise, matricule, validité** et un avatar avec initiales. **La photo n'est pas publiée**. La page est une simple lecture des champs du badge, **pas une authentification**. Elle peut être créée ou modifiée par une personne ayant accès au logiciel, puisqu'il n'existe pas de registre central ni de signature numérique des fiches.
+
+La bibliothèque [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) est incluse sous licence MIT dans `vendor/qrcode-generator.js` avec le fichier `vendor/LICENSE.qrcode-generator.txt`. La génération et l'impression du QR se font localement, mais **ouvrir la fiche web nécessite Internet**. Le lien transporte les champs professionnels du badge ; quiconque possède le lien peut les consulter. Le fragment du lien n'est pas transmis à un serveur PhotoID pour stockage. Les logos et photos importés ne sont pas envoyés à la fiche.
+
+Le bouton « Générer un nouveau matricule » utilise un identifiant aléatoire, mais son unicité entre tous les salariés et entreprises n'est pas garantie sans base de données.
+
+**Lisibilité :** testez le QR après impression sur une vraie carte, particulièrement avec un nom de société ou une fonction très longue. Un QR dense peut être difficile à scanner à la taille CR80.
 
 ## Impression recto-verso
 
