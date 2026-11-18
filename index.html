@@ -114,7 +114,7 @@
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), dpr=mm=>mm*300/25.4, clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const S={view:'photos',photo:null,photoFile:null,cutout:null,face:null,photoZoom:1,panX:0,panY:0,bg:'original',count:8,photoRects:[],layout:null,photoSize:'35x45',paper:'A4',brightness:100,contrast:100,badgePhoto:null,badgeLogo:null,badgeOrient:'landscape',badgeAccent:'#2a416f',bizLogo:null,bizTemplate:'executive',bizAccent:'#273d71',bizSide:'front',loadingFace:false,loadingBg:false};
+const S={view:'photos',photo:null,photoFile:null,cutout:null,face:null,photoZoom:1,panX:0,panY:0,bg:'original',count:8,photoRects:[],layout:null,photoSize:'35x45',paper:'A4',brightness:100,contrast:100,badgePhoto:null,badgeLogo:null,badgeOrient:'landscape',badgeSide:'front',badgeAccent:'#2a416f',bizLogo:null,bizTemplate:'executive',bizAccent:'#273d71',bizSide:'front',loadingFace:false,loadingBg:false};
 const text=(v,fallback='')=>String(v==null?fallback:v).trim();let toastTimer;
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3900)}
 function status(message,type=''){const el=$('photoStatus');el.textContent=message;el.className='status '+type}
@@ -139,13 +139,14 @@ function initUI(){
  $('photoZoom').addEventListener('input',e=>{S.photoZoom=Number(e.target.value)/100;$('zoomLabel').textContent=e.target.value+' %';drawPhoto()});
  ['brightness','contrast'].forEach(id=>$(id).addEventListener('input',e=>{S[id]=Number(e.target.value);drawPhoto()}));
  $('resetPhoto').addEventListener('click',()=>{S.panX=0;S.panY=0;S.photoZoom=1;$('photoZoom').value=100;$('zoomLabel').textContent='100 %';drawPhoto();toast('Cadrage recentré.')});
- setupGroup('badgeOrient','orient',v=>{S.badgeOrient=v;drawBadge()});setupGroup('badgeSwatches','accent',v=>{S.badgeAccent=v;drawBadge()});setupGroup('bizTemplates','template',v=>{S.bizTemplate=v;drawBiz()});setupGroup('bizSwatches','accent',v=>{S.bizAccent=v;drawBiz()});setupGroup('bizSides','side',v=>{S.bizSide=v;drawBiz()});
- ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone'].forEach(id=>$(id).addEventListener('input',drawBadge));
+ setupGroup('badgeOrient','orient',v=>{S.badgeOrient=v;drawBadge()});setupGroup('badgeSides','badgeSide',v=>{S.badgeSide=v;drawBadge()});setupGroup('badgeSwatches','accent',v=>{S.badgeAccent=v;drawBadge()});setupGroup('bizTemplates','template',v=>{S.bizTemplate=v;drawBiz()});setupGroup('bizSwatches','accent',v=>{S.bizAccent=v;drawBiz()});setupGroup('bizSides','side',v=>{S.bizSide=v;drawBiz()});
+ ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone','badgeBackMessage'].forEach(id=>$(id).addEventListener('input',drawBadge));$('badgeFlip').addEventListener('click',()=>{S.badgeSide=S.badgeSide==='front'?'back':'front';updateSelect('badgeSides','badgeSide',S.badgeSide);drawBadge()});$('bizFlip').addEventListener('click',()=>{S.bizSide=S.bizSide==='front'?'back':'front';updateSelect('bizSides','side',S.bizSide);drawBiz()});
  ['bizName','bizRole','bizCompany','bizPhone','bizEmail','bizWebsite','bizAddress'].forEach(id=>$(id).addEventListener('input',drawBiz));
  $('photoPng').onclick=()=>exportImage('photos');$('badgePng').onclick=()=>exportImage('badges');$('bizPng').onclick=()=>exportImage('cartes');
  $('photoPrint').onclick=()=>printImage('photos');$('badgePrint').onclick=()=>printImage('badges');$('bizPrint').onclick=()=>printImage('cartes');
  initDrag();drawPhoto();drawBadge();drawBiz();
 }
+function updateSelect(id,attribute,value){$(id).querySelectorAll('button').forEach(b=>{const selected=b.dataset[attribute]===value;b.classList.toggle('active',selected);if(id==='badgeSides')b.setAttribute('aria-pressed',String(selected))})}
 function setupGroup(id,attribute,cb){$(id).querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{$(id).querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));cb(btn.dataset[attribute])}))}
 function photoLayout(){const [w,h]=S.photoSize.split('x').map(Number),[pw,ph]=S.paper==='A4'?[210,297]:[100,150],margin=5,gap=2;
  let best=null,capacity=0;for(let cols=1;cols<=Math.floor((pw-2*margin+gap)/(w+gap));cols++){const maxRows=Math.floor((ph-2*margin+gap)/(h+gap));capacity=Math.max(capacity,cols*maxRows);const rows=Math.ceil(S.count/cols);if(rows>maxRows)continue;const score=Math.abs(cols-rows)+(.001*cols);if(!best||score<best.score)best={cols,rows,score}}
@@ -162,8 +163,32 @@ finally{S.loadingFace=false;$('autoFace').disabled=false;drawPhoto()}}
 function applyFaceFrame(bb){const [fw,fh]=S.photoSize.split('x').map(Number),im=S.photo,w=fw*4,h=fh*4,base=Math.max(w/im.width,h/im.height),desired=Math.max((w*.43)/(bb.width*base),(h*.39)/(bb.height*base));S.photoZoom=clamp(desired,1,4);const scale=base*S.photoZoom,fcx=bb.originX+bb.width/2,fcy=bb.originY+bb.height/2,dx=w*.5-fcx*scale,dy=h*.40-fcy*scale;S.panX=(dx-(w-im.width*scale)/2)/w;S.panY=(dy-(h-im.height*scale)/2)/h;$('photoZoom').value=Math.round(S.photoZoom*100);$('zoomLabel').textContent=Math.round(S.photoZoom*100)+' %'}
 async function removeBackgroundAI(){if(!S.photoFile){toast('Importez d’abord une photo.');return}if(S.loadingBg)return;S.loadingBg=true;$('removeBg').disabled=true;$('removeBg').textContent='⌛ Traitement IA en cours…';status('Téléchargement du modèle IA si nécessaire, puis détourage local…');try{const lib=await import('https://esm.sh/@imgly/background-removal@1.7.0?bundle');const remove=lib.default||lib.removeBackground;if(typeof remove!=='function')throw new Error('Module IA non disponible');const blob=await remove(S.photoFile,{progress:(key,current,total)=>{if(total>0)status(`Modèle IA : ${Math.round(current/total*100)} % téléchargé…`)}});S.cutout=await fileImage(new File([blob],'cutout.png',{type:'image/png'}));S.bg='#ffffff';document.querySelectorAll('#bgChips button').forEach(b=>b.classList.toggle('active',b.dataset.bg==='#ffffff'));status('Fond retiré par l’IA. Choisissez maintenant le fond blanc, bleu ou gris.','ok');drawPhoto()}catch(e){status('Détourage IA indisponible : vérifiez votre connexion et votre navigateur. La photo originale est conservée.','error');console.warn('Background-removal error',e)}finally{S.loadingBg=false;$('removeBg').disabled=false;$('removeBg').textContent='✦ Détourer le sujet avec l’IA'}}
 function badgeInfo(){return {name:$('employee').value,role:$('role').value,company:$('badgeCompany').value,id:$('employeeId').value,expiry:$('badgeExpiry').value,phone:$('badgePhone').value}}
-function renderBadge(dpi=170){const horizontal=S.badgeOrient==='landscape',w=horizontal?86:54,h=horizontal?54:86,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),W=cv.width,H=cv.height,accent=S.badgeAccent,info=badgeInfo();
+function drawWrapped(ctx,raw,x,y,maxWidth,fontSize,lineHeight,color,maxLines=3){
+ const words=String(raw).trim().split(/\s+/).filter(Boolean);ctx.font=`700 ${fontSize}px Inter,Arial,sans-serif`;
+ let lines=[],line='';
+ for(const word of words){const next=line?line+' '+word:word;if(ctx.measureText(next).width>maxWidth&&line){lines.push(line);line=word}else line=next}
+ if(line)lines.push(line);
+ lines.slice(0,maxLines).forEach((line,i)=>letter(ctx,line,x,y+i*lineHeight,fontSize,color,700,'center',maxWidth));
+}
+function renderBadge(dpi=170,side=S.badgeSide){const horizontal=S.badgeOrient==='landscape',w=horizontal?86:54,h=horizontal?54:86,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),W=cv.width,H=cv.height,accent=S.badgeAccent,info=badgeInfo();
  solid(c,'#ffffff',W,H);
+ if(side==='back'){
+   solid(c,'#fbfcff',W,H);
+   const band=horizontal?H*.37:H*.31;
+   c.fillStyle=accent;c.fillRect(0,0,W,band);
+   c.fillStyle='#ffffff15';c.beginPath();c.arc(W*.9,0,W*.32,0,Math.PI*2);c.fill();
+   if(S.badgeLogo)imageContain(c,S.badgeLogo,horizontal?W*.08:W*.3,H*.045,horizontal?W*.15:W*.4,horizontal?H*.23:H*.13);
+   else letter(c,(info.company||'E').slice(0,1),horizontal?W*.15:W*.5,H*.18,H*.13,'#ffffff',900,'center');
+   letter(c,info.company||'ENTREPRISE',horizontal?W*.56:W*.5,horizontal?H*.18:H*.255,horizontal?H*.105:H*.056,'#ffffff',850,'center',horizontal?W*.66:W*.9);
+   const cx=W*.5;
+   letter(c,'CARTE PROFESSIONNELLE',cx,horizontal?H*.49:H*.395,horizontal?H*.061:H*.041,accent,850,'center',W*.88);
+   letter(c,'PROPRIÉTÉ DE L’ENTREPRISE',cx,horizontal?H*.575:H*.445,horizontal?H*.034:H*.029,'#7b889d',800,'center',W*.88);
+   drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',cx,horizontal?H*.665:H*.53,W*.82,horizontal?H*.051:H*.042,horizontal?H*.066:H*.061,'#394b66',3);
+   c.fillStyle='#dfe5f0';c.fillRect(W*.10,horizontal?H*.825:H*.765,W*.8,1);
+   if(info.phone)letter(c,info.phone,cx,horizontal?H*.9:H*.815,horizontal?H*.062:H*.043,accent,750,'center',W*.84);
+   letter(c,'IDENTIFICATION INTERNE',cx,horizontal?H*.967:H*.943,horizontal?H*.03:H*.029,'#77869f',670,'center',W*.9);
+   return {cv,w,h};
+ }
  if(horizontal){
    const header=H*.26;solid(c,accent,W,header);c.fillStyle='#ffffff11';c.beginPath();c.arc(W*.91,H*.0,H*.4,0,Math.PI*2);c.fill();c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.75,H*.25,H*.25,0,Math.PI*2);c.fill();
    if(S.badgeLogo){imageContain(c,S.badgeLogo,W*.065,H*.045,W*.115,H*.16)}else{fillRound(c,W*.06,H*.06,H*.08,H*.13,8,'#ffffff27');letter(c,'N',W*.10,H*.147,H*.09,'#fff',900,'center')}
@@ -178,9 +203,9 @@ function renderBadge(dpi=170){const horizontal=S.badgeOrient==='landscape',w=hor
    letter(c,info.name||'NOM COMPLET',W*.5,H*.654,H*.066,'#1f2d49',880,'center',W*.91);letter(c,info.role||'Fonction',W*.5,H*.703,H*.043,accent,700,'center',W*.91);c.fillStyle='#e7ebf4';c.fillRect(W*.14,H*.735,W*.72,2);
    letter(c,'ID  '+info.id,W*.5,H*.795,H*.046,'#36445f',650,'center',W*.9);letter(c,'VALIDITÉ  '+info.expiry,W*.5,H*.848,H*.035,'#7f8da5',650,'center');if(info.phone)letter(c,info.phone,W*.5,H*.912,H*.035,'#7f8da5',650,'center');c.fillStyle=accent;c.fillRect(0,H*.971,W,H*.029);
  }return {cv,w,h}}
-function drawBadge(){const {cv}=renderBadge(170);const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0)}
+function drawBadge(){const {cv,w,h}=renderBadge(170);const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
 function bizInfo(){return {name:$('bizName').value,role:$('bizRole').value,company:$('bizCompany').value,phone:$('bizPhone').value,email:$('bizEmail').value,web:$('bizWebsite').value,address:$('bizAddress').value}}
-function renderBiz(dpi=160){const w=90,h=50,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),W=cv.width,H=cv.height,accent=S.bizAccent,info=bizInfo(),tmpl=S.bizTemplate,side=S.bizSide,wh='#fff';solid(c,'#fff',W,H);
+function renderBiz(dpi=160,side=S.bizSide){const w=90,h=50,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),W=cv.width,H=cv.height,accent=S.bizAccent,info=bizInfo(),tmpl=S.bizTemplate,wh='#fff';solid(c,'#fff',W,H);
  if(side==='back'){
    solid(c,accent,W,H);c.fillStyle='#ffffff0d';c.beginPath();c.arc(W*.95,H*.02,H*.52,0,Math.PI*2);c.fill();c.beginPath();c.arc(W*.01,H*.95,H*.38,0,Math.PI*2);c.fill();
    if(S.bizLogo)imageContain(c,S.bizLogo,W*.37,H*.23,W*.26,H*.26);else{fillRound(c,W*.445,H*.245,W*.11,H*.2,W*.025,'#ffffff20');letter(c,(info.company||'E')[0],W*.5,H*.39,H*.145,'#fff',900,'center')}
@@ -201,7 +226,7 @@ function renderBiz(dpi=160){const w=90,h=50,p=dpi/25.4,cv=document.createElement
    letter(c,info.name||'Nom Prénom',W*.075,H*.49,H*.121,wh,850,'left',W*.84);letter(c,info.role||'Votre fonction',W*.075,H*.57,H*.053,'#d7e4ff',650,'left',W*.75);c.fillStyle='#ffffff44';c.fillRect(W*.075,H*.638,W*.84,1);letter(c,info.phone,W*.075,H*.735,H*.042,wh,550,'left',W*.43);letter(c,info.email,W*.54,H*.735,H*.04,wh,550,'left',W*.43);letter(c,info.web,W*.075,H*.84,H*.043,wh,550,'left',W*.43);letter(c,info.address,W*.54,H*.84,H*.041,wh,550,'left',W*.43);
  }
  return {cv,w,h}}
-function drawBiz(){const {cv}=renderBiz(160);const target=$('bizCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('bizMeta').textContent=`${S.bizTemplate==='executive'?'Executive':S.bizTemplate==='minimal'?'Minimal':'Signature'} · ${S.bizSide==='front'?'Recto':'Verso'} · 90 × 50 mm`}
+function drawBiz(){const {cv}=renderBiz(160);const target=$('bizCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('bizMeta').textContent=`${S.bizTemplate==='executive'?'Executive':S.bizTemplate==='minimal'?'Minimal':'Signature'} · ${S.bizSide==='front'?'Recto':'Verso'} · 90 × 50 mm`;$('bizFlip').textContent=S.bizSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('bizSides','side',S.bizSide)}
 function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges')return renderBadge(dpi);return renderBiz(dpi)}
 function createSheet(art,dpi=300){const pw=210,ph=297,margin=7,gap=4,cv=document.createElement('canvas'),p=dpi/25.4,c=canvasSize(cv,pw*p,ph*p);solid(c,'#ffffff',cv.width,cv.height);const cols=Math.floor((pw-2*margin+gap)/(art.w+gap)),rows=Math.floor((ph-2*margin+gap)/(art.h+gap));const ox=(pw-cols*art.w-(cols-1)*gap)/2,oy=(ph-rows*art.h-(rows-1)*gap)/2;for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const ax=(ox+x*(art.w+gap))*p,ay=(oy+y*(art.h+gap))*p;c.drawImage(art.cv,ax,ay,art.w*p,art.h*p);c.strokeStyle='#c9ced6';c.lineWidth=1;c.strokeRect(ax,ay,art.w*p,art.h*p)}return {cv,w:pw,h:ph}}
 function downloadCanvas(cv,name){cv.toBlob(blob=>{if(!blob){toast('Échec de la création du fichier PNG.');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)},'image/png')}
