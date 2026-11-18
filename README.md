@@ -15,6 +15,7 @@ Quand GitHub Pages est activé, rendez-vous sur :
 - Détourage du fond par IA avec @imgly/background-removal
 - Badges salariés : logo, nom, fonction, matricule, portrait, formats horizontal 86 × 54 mm et vertical 54 × 86 mm, recto employé et verso entreprise cliquables
 - **QR code de matricule intégré** : génération réelle en JavaScript depuis le champ matricule (ex. `MTRC-2026-001`), mise à jour immédiate, impression sur le recto à droite du badge horizontal et en bas à droite du badge vertical. Un bouton permet de créer un nouveau matricule aléatoire au format `MTRC-AAAA-XXXXXXXX`.
+- **Design premium optimisé pour la lisibilité** : photo de l'employé découpée en cercle au recto, nom/fonction et matricule mieux contrastés et agrandis, police sans-serif soignée, matricule lisible sur les deux faces, QR de matricule présent sur le recto et le verso, en horizontal comme en vertical.
 - Cartes de visite : **4 modèles Prestige, Corporate, Minimal et Luxe**, choix avec miniatures cliquables, couleurs personnalisables, logo, recto et verso cliquables, format 90 × 50 mm
 - Impression de badges et cartes de visite en **recto-verso sur deux pages A4**, à l'échelle 100 %, avec choix de feuille portrait/paysage, quantité et positions miroirs pour l'alignement au découpage
 - Interface entièrement en français, adaptée aux PC et aux mobiles
