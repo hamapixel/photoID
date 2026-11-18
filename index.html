@@ -240,28 +240,132 @@ function renderBadge(dpi=170,side=S.badgeSide){const horizontal=S.badgeOrient===
  }return {cv,w,h}}
 function drawBadge(){const {cv,w,h}=renderBadge(170);const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
 function bizInfo(){return {name:$('bizName').value,role:$('bizRole').value,company:$('bizCompany').value,phone:$('bizPhone').value,email:$('bizEmail').value,web:$('bizWebsite').value,address:$('bizAddress').value}}
-function renderBiz(dpi=160,side=S.bizSide){const w=90,h=50,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),W=cv.width,H=cv.height,accent=S.bizAccent,info=bizInfo(),tmpl=S.bizTemplate,wh='#fff';solid(c,'#fff',W,H);
- if(side==='back'){
-   solid(c,accent,W,H);c.fillStyle='#ffffff0d';c.beginPath();c.arc(W*.95,H*.02,H*.52,0,Math.PI*2);c.fill();c.beginPath();c.arc(W*.01,H*.95,H*.38,0,Math.PI*2);c.fill();
-   if(S.bizLogo)imageContain(c,S.bizLogo,W*.37,H*.23,W*.26,H*.26);else{fillRound(c,W*.445,H*.245,W*.11,H*.2,W*.025,'#ffffff20');letter(c,(info.company||'E')[0],W*.5,H*.39,H*.145,'#fff',900,'center')}
-   letter(c,info.company||'VOTRE ENTREPRISE',W*.5,H*.65,H*.086,wh,880,'center',W*.85);c.fillStyle='#ffffffaa';c.fillRect(W*.38,H*.73,W*.24,1);letter(c,info.web||'VOTRE SITE WEB',W*.5,H*.84,H*.043,'#e3e8f9',600,'center',W*.88);
- }else if(tmpl==='executive'){
-   solid(c,'#fbfcff',W,H);c.fillStyle=accent;c.beginPath();c.moveTo(0,0);c.lineTo(W*.415,0);c.lineTo(W*.345,H);c.lineTo(0,H);c.closePath();c.fill();c.fillStyle='#ffffff18';c.beginPath();c.arc(-W*.12,H*.15,W*.48,0,Math.PI*2);c.fill();
-   if(S.bizLogo)imageContain(c,S.bizLogo,W*.075,H*.17,W*.17,H*.26);else{fillRound(c,W*.115,H*.22,W*.115,H*.22,10,'#ffffff22');letter(c,(info.company||'N')[0],W*.172,H*.385,H*.14,'#fff',900,'center')}
-   letter(c,info.company||'ENTREPRISE',W*.165,H*.59,H*.068,wh,830,'center',W*.27);letter(c,'EXCELLENCE & CONFIANCE',W*.165,H*.66,H*.026,'#dce5ff',660,'center',W*.28);
-   const x=W*.44;letter(c,info.name||'Nom Prénom',x,H*.255,H*.095,'#192942',850,'left',W*.52);letter(c,info.role||'Votre fonction',x,H*.34,H*.051,accent,740,'left',W*.52);c.fillStyle='#e7ebf4';c.fillRect(x,H*.425,W*.48,2);
-   letter(c,'☎  '+info.phone,x,H*.535,H*.049,'#45536a',630,'left',W*.5);letter(c,'✉  '+info.email,x,H*.652,H*.044,'#45536a',610,'left',W*.51);letter(c,'◉  '+info.web,x,H*.764,H*.044,'#45536a',610,'left',W*.51);letter(c,'⌖  '+info.address,x,H*.875,H*.042,'#718098',580,'left',W*.51);
- }else if(tmpl==='minimal'){
-   solid(c,'#fff',W,H);c.fillStyle=accent;c.fillRect(0,0,W,H*.027);c.fillRect(W*.055,H*.2,W*.008,H*.63);
-   if(S.bizLogo)imageContain(c,S.bizLogo,W*.79,H*.11,W*.15,H*.23);else letter(c,(info.company||'N').slice(0,2).toUpperCase(),W*.89,H*.235,H*.09,accent,850,'center');
-   letter(c,info.company||'VOTRE ENTREPRISE',W*.09,H*.21,H*.049,accent,860,'left',W*.65);letter(c,info.name||'Nom Prénom',W*.09,H*.42,H*.105,'#18243c',850,'left',W*.74);letter(c,info.role||'Votre fonction',W*.09,H*.505,H*.051,'#8390a3',640,'left',W*.76);c.fillStyle='#e8ecf4';c.fillRect(W*.09,H*.57,W*.81,2);letter(c,info.phone,W*.09,H*.685,H*.042,'#53617a',620,'left',W*.43);letter(c,info.email,W*.54,H*.685,H*.04,'#53617a',620,'left',W*.4);letter(c,info.web,W*.09,H*.79,H*.042,'#53617a',620,'left',W*.43);letter(c,info.address,W*.54,H*.79,H*.042,'#53617a',620,'left',W*.4);
- }else{
-   solid(c,accent,W,H);const grad=c.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#ffffff00');grad.addColorStop(1,'#050c2355');c.fillStyle=grad;c.fillRect(0,0,W,H);c.strokeStyle='#ffffff25';c.lineWidth=H*.005;for(let i=0;i<5;i++){c.beginPath();c.arc(W*1.0,H*.0,H*(.16+i*.16),0,Math.PI*2);c.stroke()}
-   if(S.bizLogo)imageContain(c,S.bizLogo,W*.07,H*.07,W*.19,H*.2);else letter(c,(info.company||'N')[0],W*.12,H*.21,H*.14,wh,900,'center');letter(c,info.company||'ENTREPRISE',W*.295,H*.175,H*.061,'#e7ebff',850,'left',W*.64);
-   letter(c,info.name||'Nom Prénom',W*.075,H*.49,H*.121,wh,850,'left',W*.84);letter(c,info.role||'Votre fonction',W*.075,H*.57,H*.053,'#d7e4ff',650,'left',W*.75);c.fillStyle='#ffffff44';c.fillRect(W*.075,H*.638,W*.84,1);letter(c,info.phone,W*.075,H*.735,H*.042,wh,550,'left',W*.43);letter(c,info.email,W*.54,H*.735,H*.04,wh,550,'left',W*.43);letter(c,info.web,W*.075,H*.84,H*.043,wh,550,'left',W*.43);letter(c,info.address,W*.54,H*.84,H*.041,wh,550,'left',W*.43);
- }
- return {cv,w,h}}
-function drawBiz(){const {cv}=renderBiz(160);const target=$('bizCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('bizMeta').textContent=`${S.bizTemplate==='executive'?'Executive':S.bizTemplate==='minimal'?'Minimal':'Signature'} · ${S.bizSide==='front'?'Recto':'Verso'} · 90 × 50 mm`;$('bizFlip').textContent=S.bizSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('bizSides','side',S.bizSide)}
+function renderBiz(dpi=160,side=S.bizSide){
+ const w=90,h=50,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),
+ W=cv.width,H=cv.height,accent=S.bizAccent,info=bizInfo(),t=S.bizTemplate;
+ const logo=(x,y,lw,lh,color='#fff')=>{
+  if(S.bizLogo)imageContain(c,S.bizLogo,x,y,lw,lh);
+  else letter(c,(info.company||'E').slice(0,1).toUpperCase(),x+lw*.5,y+lh*.78,lh*.73,color,850,'center',lw);
+ };
+ const line=(x,y,lw,color='#dce1e8',width=1)=>{c.fillStyle=color;c.fillRect(x,y,lw,width)};
+ solid(c,'#fff',W,H);
+ if(t==='prestige'){
+  const gold='#c2a373',navy=accent;
+  if(side==='front'){
+   solid(c,'#fbf8f2',W,H);c.fillStyle=navy;c.fillRect(0,0,W*.35,H);c.fillStyle=gold;c.fillRect(W*.35,0,W*.008,H);
+   c.strokeStyle='#ffffff25';c.lineWidth=2;c.beginPath();c.arc(W*.04,H*.07,W*.3,0,Math.PI*2);c.stroke();
+   logo(W*.095,H*.16,W*.155,H*.26,'#f4dcae');
+   letter(c,info.company||'ENTREPRISE',W*.175,H*.59,H*.055,'#f7ead3',850,'center',W*.29);
+   line(W*.105,H*.64,W*.14,gold,2);
+   letter(c,'PRESTIGE',W*.175,H*.73,H*.036,'#dac8a7',740,'center');
+   const x=W*.407;
+   letter(c,info.name||'Nom Prénom',x,H*.255,H*.108,navy,860,'left',W*.55);
+   letter(c,info.role||'Fonction',x,H*.36,H*.052,'#8a7653',700,'left',W*.54);
+   line(x,H*.437,W*.50,'#ded7c9',1.5);
+   letter(c,info.phone,x,H*.55,H*.051,'#374963',630,'left',W*.5);
+   letter(c,info.email,x,H*.67,H*.045,'#374963',600,'left',W*.5);
+   letter(c,info.web,x,H*.783,H*.045,'#374963',600,'left',W*.5);
+   letter(c,info.address,x,H*.889,H*.039,'#7b8390',560,'left',W*.5);
+  }else{
+   solid(c,navy,W,H);c.strokeStyle=gold;c.lineWidth=H*.005;c.strokeRect(W*.036,H*.062,W*.928,H*.876);
+   c.strokeStyle='#bca06b66';c.strokeRect(W*.051,H*.088,W*.898,H*.825);
+   logo(W*.437,H*.15,W*.126,H*.2,'#d9bc7d');
+   letter(c,info.company||'VOTRE ENTREPRISE',W*.5,H*.52,H*.095,'#f4e9d3',880,'center',W*.85);
+   line(W*.375,H*.58,W*.25,gold,2);
+   letter(c,info.web||'VOTRE SITE WEB',W*.5,H*.70,H*.051,'#d8c39a',600,'center',W*.84);
+   letter(c,'EXCELLENCE · CONFIANCE',W*.5,H*.82,H*.034,'#c6b99f',680,'center');
+  }
+ }else if(t==='corporate'){
+  const navy='#172b4f',blue=accent,muted='#64728a';
+  if(side==='front'){
+   solid(c,'#fff',W,H);
+   c.fillStyle=navy;c.beginPath();c.moveTo(0,0);c.lineTo(W*.4,0);c.lineTo(W*.33,H);c.lineTo(0,H);c.closePath();c.fill();
+   c.fillStyle=blue;c.beginPath();c.moveTo(W*.34,0);c.lineTo(W*.4,0);c.lineTo(W*.33,H);c.lineTo(W*.265,H);c.closePath();c.fill();
+   c.fillStyle='#eef3ff';c.beginPath();c.arc(W*.99,H*.08,W*.21,0,Math.PI*2);c.fill();
+   logo(W*.08,H*.12,W*.18,H*.28,'#fff');
+   letter(c,info.company||'ENTREPRISE',W*.16,H*.54,H*.06,'#fff',860,'center',W*.27);
+   letter(c,'PROFESSIONNEL',W*.16,H*.622,H*.034,'#b3c7ee',640,'center');
+   const x=W*.43;
+   letter(c,info.name||'Nom Prénom',x,H*.245,H*.103,navy,850,'left',W*.53);
+   letter(c,info.role||'Fonction',x,H*.342,H*.053,blue,700,'left',W*.52);
+   line(x,H*.41,W*.52,'#d9e0ee',1.5);
+   letter(c,info.phone,x,H*.535,H*.048,muted,630,'left',W*.5);
+   letter(c,info.email,x,H*.65,H*.045,muted,610,'left',W*.5);
+   letter(c,info.web,x,H*.765,H*.045,muted,610,'left',W*.5);
+   letter(c,info.address,x,H*.87,H*.042,muted,600,'left',W*.5);
+  }else{
+   solid(c,navy,W,H);c.fillStyle=blue;c.beginPath();c.moveTo(W*.72,0);c.lineTo(W,0);c.lineTo(W,H);c.lineTo(W*.47,H);c.closePath();c.fill();
+   c.fillStyle='#ffffff10';c.fillRect(W*.07,H*.12,W*.86,H*.76);
+   logo(W*.45,H*.17,W*.1,H*.17,'#fff');
+   letter(c,info.company||'ENTREPRISE',W*.5,H*.52,H*.096,'#fff',870,'center',W*.83);
+   line(W*.36,H*.587,W*.28,'#bcd1ff',2);
+   letter(c,info.web||'VOTRE SITE WEB',W*.5,H*.727,H*.05,'#e1eafe',650,'center',W*.83);
+  }
+ }else if(t==='minimal'){
+  const ink='#202d3b',muted='#738293';
+  if(side==='front'){
+   solid(c,'#fcfcfa',W,H);c.fillStyle=accent;c.fillRect(W*.053,H*.12,W*.007,H*.76);
+   logo(W*.85,H*.08,W*.09,H*.2,accent);
+   letter(c,info.company||'ENTREPRISE',W*.09,H*.207,H*.05,accent,850,'left',W*.7);
+   letter(c,info.name||'Nom Prénom',W*.09,H*.435,H*.126,ink,850,'left',W*.79);
+   letter(c,info.role||'Votre fonction',W*.09,H*.537,H*.054,muted,600,'left',W*.75);
+   line(W*.09,H*.605,W*.81,'#d5dce2',1);
+   letter(c,info.phone,W*.09,H*.712,H*.048,ink,610,'left',W*.42);
+   letter(c,info.email,W*.53,H*.712,H*.048,ink,610,'left',W*.4);
+   letter(c,info.web,W*.09,H*.825,H*.046,muted,590,'left',W*.42);
+   letter(c,info.address,W*.53,H*.825,H*.046,muted,590,'left',W*.4);
+  }else{
+   solid(c,'#fcfcfa',W,H);
+   c.strokeStyle='#e2e4df';c.lineWidth=1.5;c.strokeRect(W*.047,H*.07,W*.906,H*.86);
+   logo(W*.447,H*.18,W*.106,H*.2,accent);
+   letter(c,info.company||'ENTREPRISE',W*.5,H*.54,H*.099,ink,840,'center',W*.83);
+   line(W*.39,H*.595,W*.22,accent,2);
+   letter(c,info.web||'VOTRE SITE WEB',W*.5,H*.729,H*.05,muted,580,'center',W*.8);
+  }
+ }else if(t==='luxe'){
+  const gold=accent,light='#f5e9d0',dark='#13161b';
+  solid(c,dark,W,H);
+  const grad=c.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#32302c');grad.addColorStop(.65,'#15181c');grad.addColorStop(1,'#101216');
+  c.fillStyle=grad;c.fillRect(0,0,W,H);
+  c.strokeStyle=gold;c.lineWidth=2;c.strokeRect(W*.025,H*.045,W*.95,H*.91);
+  c.fillStyle=gold;c.fillRect(W*.06,H*.087,W*.12,2);
+  if(side==='front'){
+   logo(W*.08,H*.12,W*.12,H*.2,gold);
+   letter(c,info.company||'ENTREPRISE',W*.245,H*.225,H*.059,light,820,'left',W*.68);
+   line(W*.08,H*.36,W*.84,'#a48a5878',1.5);
+   letter(c,info.name||'Nom Prénom',W*.08,H*.53,H*.122,light,850,'left',W*.83);
+   letter(c,info.role||'Votre fonction',W*.08,H*.627,H*.054,gold,690,'left',W*.79);
+   line(W*.08,H*.684,W*.84,'#a48a5866',1);
+   letter(c,info.phone,W*.08,H*.781,H*.046,'#ddd9cf',590,'left',W*.41);
+   letter(c,info.email,W*.51,H*.781,H*.046,'#ddd9cf',590,'left',W*.41);
+   letter(c,info.web,W*.08,H*.876,H*.04,'#c1baac',560,'left',W*.41);
+   letter(c,info.address,W*.51,H*.876,H*.04,'#c1baac',560,'left',W*.41);
+  }else{
+   c.strokeStyle='#bda47077';c.lineWidth=1;c.strokeRect(W*.043,H*.078,W*.914,H*.844);
+   logo(W*.444,H*.165,W*.112,H*.21,gold);
+   letter(c,info.company||'ENTREPRISE',W*.5,H*.55,H*.103,light,900,'center',W*.84);
+   line(W*.38,H*.61,W*.24,gold,2);
+   letter(c,info.web||'VOTRE SITE WEB',W*.5,H*.75,H*.052,gold,680,'center',W*.79);
+  }
+ }else throw new Error('Modèle de carte inconnu : '+t);
+ return {cv,w,h};
+}
+function drawBiz(){
+ const {cv}=renderBiz(160),target=$('bizCanvas');
+ target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);
+ const names={prestige:'Prestige',corporate:'Corporate',minimal:'Minimal',luxe:'Luxe'};
+ $('bizMeta').textContent=`${names[S.bizTemplate]} · ${S.bizSide==='front'?'Recto':'Verso'} · 90 × 50 mm`;
+ $('bizFlip').textContent=S.bizSide==='front'?'↻ Voir le verso':'↻ Voir le recto';
+ updateSelect('bizSides','side',S.bizSide);updateSelect('bizTemplates','template',S.bizTemplate);
+ ['front','back'].forEach(side=>{
+  const miniature=renderBiz(78,side),can=$(side==='front'?'bizThumbFront':'bizThumbBack');
+  can.width=miniature.cv.width;can.height=miniature.cv.height;can.getContext('2d').drawImage(miniature.cv,0,0);
+ });
+ document.querySelectorAll('[data-preview-side]').forEach(btn=>{
+  const active=btn.dataset.previewSide===S.bizSide;
+  btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
+ });
+}
 function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges')return renderBadge(dpi);return renderBiz(dpi)}
 function createSheet(art,dpi=300,orientation='portrait',copies='auto',reverse=false){
  const pw=orientation==='landscape'?297:210,ph=orientation==='landscape'?210:297,margin=7,gap=4,cv=document.createElement('canvas'),p=dpi/25.4,c=canvasSize(cv,pw*p,ph*p);
@@ -280,7 +384,7 @@ function createSheet(art,dpi=300,orientation='portrait',copies='auto',reverse=fa
  return {cv,w:pw,h:ph,count,capacity};
 }
 function downloadCanvas(cv,name){cv.toBlob(blob=>{if(!blob){toast('Échec de la création du fichier PNG.');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)},'image/png')}
-function exportImage(which){try{const art=getArt(which),filename=which==='photos'?'Planche_Photos_Identite.png':which==='badges'?'Badge_Entreprise.png':`Carte_Visite_${S.bizSide==='front'?'Recto':'Verso'}.png`;downloadCanvas(art.cv,filename);toast('Fichier PNG en cours de téléchargement.')}catch(e){toast(e.message)}}
+function exportImage(which){try{const art=getArt(which),filename=which==='photos'?'Planche_Photos_Identite.png':which==='badges'?'Badge_Entreprise.png':`Carte_Visite_${S.bizTemplate}_${S.bizSide==='front'?'Recto':'Verso'}.png`;downloadCanvas(art.cv,filename);toast('Fichier PNG en cours de téléchargement.')}catch(e){toast(e.message)}}
 function printImage(which){
  try{
   let pages;
