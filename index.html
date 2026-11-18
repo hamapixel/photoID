@@ -270,29 +270,42 @@ function prepareBadgeLogo(image){
   const cw=Math.max(1,Math.round(sw*scale)),ch=Math.max(1,Math.round(sh*scale));
   const base=document.createElement('canvas');base.width=cw;base.height=ch;
   const ctx=base.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,cw,ch);
-  const data=ctx.getImageData(0,0,cw,ch).data;
-  const isWhite=(i)=>data[i]>238&&data[i+1]>238&&data[i+2]>238&&data[i+3]>245;
-  const sample=[[0,0],[cw-1,0],[0,ch-1],[cw-1,ch-1],[Math.floor(cw/2),0],[0,Math.floor(ch/2)],[cw-1,Math.floor(ch/2)],[Math.floor(cw/2),ch-1]];
-  const transparentCorners=sample.filter(([x,y])=>data[(y*cw+x)*4+3]<30).length;
-  const whiteCorners=sample.filter(([x,y])=>isWhite((y*cw+x)*4)).length;
-  const transparentMode=transparentCorners>=4,whiteMode=!transparentMode&&whiteCorners>=6;
-  if(!transparentMode&&!whiteMode)return image;
+  const pixels=ctx.getImageData(0,0,cw,ch),data=pixels.data;
+  const isWhite=i=>data[i]>238&&data[i+1]>238&&data[i+2]>238&&data[i+3]>245;
+  const isDark=i=>{
+   const a=data[i+3],r=data[i],g=data[i+1],b=data[i+2];
+   return a>245&&Math.max(r,g,b)<74&&Math.max(r,g,b)-Math.min(r,g,b)<34;
+  };
+  const samples=[[0,0],[cw-1,0],[0,ch-1],[cw-1,ch-1],[Math.floor(cw/2),0],[0,Math.floor(ch/2)],[cw-1,Math.floor(ch/2)],[Math.floor(cw/2),ch-1]];
+  const sampleIdx=([x,y])=>(y*cw+x)*4;
+  const transparentMode=samples.filter(p=>data[sampleIdx(p)+3]<30).length>=4;
+  const whiteMode=!transparentMode&&samples.filter(p=>isWhite(sampleIdx(p))).length>=6;
+  const darkMode=!transparentMode&&!whiteMode&&samples.filter(p=>isDark(sampleIdx(p))).length>=6;
+  if(!transparentMode&&!whiteMode&&!darkMode)return image;
+  if(darkMode){
+   // Remove only the near-neutral dark backdrop. Bright brand strokes are kept.
+   for(let i=0;i<data.length;i+=4){
+    const r=data[i],g=data[i+1],b=data[i+2],max=Math.max(r,g,b),min=Math.min(r,g,b);
+    if(max-min<31 && max<78){
+     data[i+3]=Math.round(data[i+3]*Math.max(0,Math.min(1,(max-39)/39)));
+    }
+   }
+   ctx.putImageData(pixels,0,0);
+  }
   let l=cw,t=ch,right=-1,bottom=-1;
   const stride=Math.max(1,Math.floor(Math.min(cw,ch)/500));
   for(let y=0;y<ch;y+=stride)for(let x=0;x<cw;x+=stride){
-    const i=(y*cw+x)*4;
-    if(data[i+3]<40)continue;
-    if(whiteMode&&isWhite(i))continue;
-    l=Math.min(l,x);t=Math.min(t,y);right=Math.max(right,x);bottom=Math.max(bottom,y);
+   const i=(y*cw+x)*4;
+   if(data[i+3]<42)continue;
+   if(whiteMode&&isWhite(i))continue;
+   l=Math.min(l,x);t=Math.min(t,y);right=Math.max(right,x);bottom=Math.max(bottom,y);
   }
   if(right<l||bottom<t)return image;
-  // Do not crop if the visible artwork almost fills the source.
-  if(l<cw*.04&&t<ch*.04&&right>cw*.96&&bottom>ch*.96)return image;
-  const pad=Math.max(2,Math.round(Math.max(right-l,bottom-t)*.06));
-  l=Math.max(0,l-pad);t=Math.max(0,t-pad);
-  right=Math.min(cw,right+pad);bottom=Math.min(ch,bottom+pad);
+  const pad=Math.max(2,Math.round(Math.max(right-l,bottom-t)*.065));
+  l=Math.max(0,l-pad);t=Math.max(0,t-pad);right=Math.min(cw-1,right+pad);bottom=Math.min(ch-1,bottom+pad);
   const out=document.createElement('canvas');out.width=Math.max(1,right-l+1);out.height=Math.max(1,bottom-t+1);
   out.getContext('2d').drawImage(base,l,t,out.width,out.height,0,0,out.width,out.height);
+  out.badgeTransparent=transparentMode||darkMode;
   return out;
  }catch(e){return image}
 }
@@ -306,18 +319,25 @@ function badgeRoundPortrait(ctx,img,cx,cy,diameter,accent){
  ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.clip();
  ctx.fillStyle='#e9eff8';ctx.fillRect(cx-rad,cy-rad,diameter,diameter);
  if(img){
-   imageCover(ctx,img,cx-rad,cy-rad,diameter,diameter);
+  const iw=img.width||1,ih=img.height||1;
+  // Gentle soft background fills side gaps without cropping the face.
+  ctx.save();ctx.globalAlpha=.2;ctx.filter='blur('+Math.max(3,diameter*.1)+'px)';
+  imageCover(ctx,img,cx-rad,cy-rad,diameter,diameter);
+  ctx.restore();
+  // Foreground photo fits entirely: head, hairline and shoulders are preserved.
+  const scale=Math.min(diameter*.965/iw,diameter*.965/ih),dw=iw*scale,dh=ih*scale;
+  ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
  }else{
-   ctx.beginPath();ctx.arc(cx,cy-rad*.17,rad*.27,0,Math.PI*2);
-   ctx.fillStyle='#bccadd';ctx.fill();
-   ctx.beginPath();ctx.ellipse(cx,cy+rad*.73,rad*.67,rad*.51,0,Math.PI,Math.PI*2);
-   ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy-rad*.17,rad*.27,0,Math.PI*2);
+  ctx.fillStyle='#bccadd';ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx,cy+rad*.73,rad*.67,rad*.51,0,Math.PI,Math.PI*2);
+  ctx.fill();
  }
  ctx.restore();
- // Light ring framing the round portrait.
  ctx.save();ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);
  ctx.strokeStyle=accent;ctx.lineWidth=Math.max(1,diameter*.014);ctx.stroke();ctx.restore();
 }
+
 function renderBadge(dpi=170,side=S.badgeSide){
  const horizontal=S.badgeOrient==='landscape';
  const w=horizontal?86:54,h=horizontal?54:86,p=dpi/25.4;
@@ -326,16 +346,18 @@ function renderBadge(dpi=170,side=S.badgeSide){
  const company=info.company||'VOTRE ENTREPRISE',person=info.name||'NOM COMPLET';
  const matrix=info.id||'À GÉNÉRER',job=info.role||'FONCTION';
  const idLabel='MATRICULE';
- const logo=(x,y,lw,lh)=>{
-   // White premium plaque significantly improves contrast for blue/dark logos.
-   const corner=Math.min(lh*.20,lw*.12);
-   fillRound(c,x,y,lw,lh,corner,'#ffffff');
-   c.save();
-   c.strokeStyle='#d8e8e9';c.lineWidth=Math.max(1,W*.0018);
-   c.beginPath();c.roundRect(x,y,lw,lh,corner);c.stroke();
-   c.restore();
+ const logo=(x,y,lw,lh,vertical=false)=>{
+   // Transparent or dark-background logos float naturally on the green header.
+   const floating=vertical&&S.badgeLogo&&S.badgeLogo.badgeTransparent;
+   if(!floating){
+     const corner=Math.min(lh*.20,lw*.12);
+     fillRound(c,x,y,lw,lh,corner,'#ffffff');
+     c.save();c.strokeStyle='#d8e8e9';c.lineWidth=Math.max(1,W*.0018);
+     c.beginPath();c.roundRect(x,y,lw,lh,corner);c.stroke();c.restore();
+   }
    if(S.badgeLogo){
-     imageContain(c,S.badgeLogo,x+lw*.045,y+lh*.055,lw*.91,lh*.89);
+     const margin=floating?0.01:0.052;
+     imageContain(c,S.badgeLogo,x+lw*margin,y+lh*margin,lw*(1-2*margin),lh*(1-2*margin));
    }else{
      badgeText(c,company.slice(0,2).toUpperCase(),x+lw/2,y+lh*.73,lh*.55,accent,'850','center',lw*.8);
    }
@@ -378,11 +400,12 @@ function renderBadge(dpi=170,side=S.badgeSide){
    if(side==='front'){c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027)}
  }else{
    // Portrait CR80 badge, 54 × 86 mm.
-   c.fillStyle=accent;c.fillRect(0,0,W,H*.264);
-   c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.82,H*.055,W*.51,0,Math.PI*2);c.fill();
-   logo(W*.318,H*.024,W*.364,H*.137);
-   badgeText(c,company,W*.5,H*.204,H*.057,'#fff','850','center',W*.9,H*.047);
-   badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.249,H*.032,'#edf6f6','750','center',W*.87);
+   c.fillStyle=accent;c.fillRect(0,0,W,H*.241);
+   c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.91,-H*.035,W*.48,0,Math.PI*2);c.fill();
+   // Balanced horizontal logo + company lockup, not a stacked boxed logo.
+   logo(W*.065,H*.062,W*.338,H*.124,true);
+   badgeText(c,company,W*.445,H*.137,H*.063,'#fff','850','left',W*.505,H*.046);
+   badgeText(c,'CARTE PROFESSIONNELLE',W*.445,H*.194,H*.033,'#ecf7f4','750','left',W*.505,H*.028);
    if(side==='front'){
      // Compact circular portrait with clear space between the header and employee text.
      badgeRoundPortrait(c,S.badgePhoto,W*.5,H*.383,W*.345,accent);
