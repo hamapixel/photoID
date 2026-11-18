@@ -143,7 +143,7 @@
     <div><div class="panel preview-panel"><div class="panel-head"><div><h2 class="panel-title">Votre carte de visite</h2><span class="panel-hint" id="bizMeta">Prestige · Recto · 90 × 50 mm</span></div><span class="preview-meta">300 DPI</span></div><div class="canvas-zone landscape"><canvas id="bizCanvas" aria-label="Aperçu de carte de visite"></canvas></div><div class="preview-action"><button type="button" id="bizFlip" class="button secondary">↻ Voir le verso</button></div><div class="business-mini-previews" aria-label="Aperçus cliquables recto-verso"><button type="button" class="business-thumb active" data-preview-side="front" aria-pressed="true"><canvas id="bizThumbFront" aria-hidden="true"></canvas><strong>Recto</strong></button><button type="button" class="business-thumb" data-preview-side="back" aria-pressed="false"><canvas id="bizThumbBack" aria-hidden="true"></canvas><strong>Verso</strong></button></div><p class="note">Format professionnel 90 × 50 mm. Pour l'impression recto-verso, exportez chaque côté et vérifiez l'alignement de votre imprimante.</p></div><div class="statstrip"><div class="statbox"><b>90×50</b><small>Dimensions (mm)</small></div><div class="statbox"><b>2 faces</b><small>Recto et verso</small></div><div class="statbox"><b>A4</b><small>Planche imprimable</small></div></div></div>
   </div>
 </section>
-<div class="footerline">PhotoID Studio Premium · Une édition BTDIGIT · Les fichiers sont générés sur votre ordinateur</div>
+<div class="footerline">PhotoID Studio Premium · Créé par <a href="https://hamapixel.github.io/nexora-technologies/" target="_blank" rel="noopener noreferrer" style="font-weight:800;text-decoration:underline;text-underline-offset:2px">BTDIGIT</a> · <a href="https://hamapixel.github.io/nexora-technologies/" target="_blank" rel="noopener noreferrer">hamapixel.github.io/nexora-technologies/</a> · Fichiers générés localement</div>
 </div></main></div>
 <div id="toast" class="toast" role="status"></div>
 <script src="./vendor/qrcode-generator.js"></script>
@@ -167,7 +167,7 @@ function initUI(){
  document.querySelectorAll('[data-view]').forEach(btn=>btn.addEventListener('click',()=>{S.view=btn.dataset.view;document.querySelectorAll('[data-view]').forEach(n=>n.classList.toggle('active',n===btn));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('active',n.id==='view-'+S.view));$('breadcrumb').textContent=({photos:"Photos d'identité",badges:'Badges entreprise',cartes:'Cartes de visite'})[S.view];if(S.view==='badges')drawBadge();if(S.view==='cartes')drawBiz()}));
  $('photoUpload').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{S.photo=await fileImage(f);S.photoFile=f;S.cutout=null;S.face=null;S.panX=S.panY=0;S.photoZoom=1;$('photoZoom').value=100;$('zoomLabel').textContent='100 %';S.badgePhoto=S.photo;status('Photo importée. Recherche du visage…');drawPhoto();drawBadge();await detectFace()}catch(error){status(error.message,'error')}});
  $('badgePhotoUpload').addEventListener('change',async e=>{try{if(e.target.files?.[0]){S.badgePhoto=await fileImage(e.target.files[0]);drawBadge();toast('Photo employé importée.')}}catch(e){toast(e.message)}});
- $('badgeLogoUpload').addEventListener('change',async e=>{try{if(e.target.files?.[0]){S.badgeLogo=await fileImage(e.target.files[0]);drawBadge();toast('Logo entreprise importé.')}}catch(e){toast(e.message)}});
+ $('badgeLogoUpload').addEventListener('change',async e=>{try{if(e.target.files?.[0]){const image=await fileImage(e.target.files[0]);S.badgeLogo=prepareBadgeLogo(image);drawBadge();toast('Logo optimisé et importé : aperçu mis à jour.')}}catch(e){toast(e.message)}});
  $('bizLogoUpload').addEventListener('change',async e=>{try{if(e.target.files?.[0]){S.bizLogo=await fileImage(e.target.files[0]);drawBiz();toast('Logo entreprise importé.')}}catch(e){toast(e.message)}});
  $('autoFace').addEventListener('click',detectFace);$('removeBg').addEventListener('click',removeBackgroundAI);
  setupGroup('bgChips','bg',v=>{S.bg=v;drawPhoto()});setupGroup('copyChips','count',v=>{S.count=Number(v);drawPhoto()});
@@ -260,6 +260,43 @@ function badgeText(ctx,content,x,y,fontSize,color,weight='700',align='left',maxW
  ctx.fillText(raw,x,y,maxWidth||undefined);
  return fs;
 }
+
+// Logo normalization only alters the display copy; the original file is unchanged.
+// Trim obvious transparent or near-white exterior padding to make small business logos
+// readable inside the badge, while retaining their original colors and proportions.
+function prepareBadgeLogo(image){
+ try{
+  const sw=image.width,sh=image.height,scale=Math.min(1,1100/Math.max(sw,sh));
+  const cw=Math.max(1,Math.round(sw*scale)),ch=Math.max(1,Math.round(sh*scale));
+  const base=document.createElement('canvas');base.width=cw;base.height=ch;
+  const ctx=base.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,cw,ch);
+  const data=ctx.getImageData(0,0,cw,ch).data;
+  const isWhite=(i)=>data[i]>238&&data[i+1]>238&&data[i+2]>238&&data[i+3]>245;
+  const sample=[[0,0],[cw-1,0],[0,ch-1],[cw-1,ch-1],[Math.floor(cw/2),0],[0,Math.floor(ch/2)],[cw-1,Math.floor(ch/2)],[Math.floor(cw/2),ch-1]];
+  const transparentCorners=sample.filter(([x,y])=>data[(y*cw+x)*4+3]<30).length;
+  const whiteCorners=sample.filter(([x,y])=>isWhite((y*cw+x)*4)).length;
+  const transparentMode=transparentCorners>=4,whiteMode=!transparentMode&&whiteCorners>=6;
+  if(!transparentMode&&!whiteMode)return image;
+  let l=cw,t=ch,right=-1,bottom=-1;
+  const stride=Math.max(1,Math.floor(Math.min(cw,ch)/500));
+  for(let y=0;y<ch;y+=stride)for(let x=0;x<cw;x+=stride){
+    const i=(y*cw+x)*4;
+    if(data[i+3]<40)continue;
+    if(whiteMode&&isWhite(i))continue;
+    l=Math.min(l,x);t=Math.min(t,y);right=Math.max(right,x);bottom=Math.max(bottom,y);
+  }
+  if(right<l||bottom<t)return image;
+  // Do not crop if the visible artwork almost fills the source.
+  if(l<cw*.04&&t<ch*.04&&right>cw*.96&&bottom>ch*.96)return image;
+  const pad=Math.max(2,Math.round(Math.max(right-l,bottom-t)*.06));
+  l=Math.max(0,l-pad);t=Math.max(0,t-pad);
+  right=Math.min(cw,right+pad);bottom=Math.min(ch,bottom+pad);
+  const out=document.createElement('canvas');out.width=Math.max(1,right-l+1);out.height=Math.max(1,bottom-t+1);
+  out.getContext('2d').drawImage(base,l,t,out.width,out.height,0,0,out.width,out.height);
+  return out;
+ }catch(e){return image}
+}
+
 function badgeRoundPortrait(ctx,img,cx,cy,diameter,accent){
  const rad=diameter/2;
  ctx.save();
@@ -290,10 +327,17 @@ function renderBadge(dpi=170,side=S.badgeSide){
  const matrix=info.id||'À GÉNÉRER',job=info.role||'FONCTION';
  const idLabel='MATRICULE';
  const logo=(x,y,lw,lh)=>{
-   if(S.badgeLogo)imageContain(c,S.badgeLogo,x,y,lw,lh);
-   else{
-     fillRound(c,x+lw*.15,y+lh*.05,lw*.7,lh*.88,Math.max(4,lw*.08),'#ffffff20');
-     badgeText(c,company.slice(0,1).toUpperCase(),x+lw/2,y+lh*.77,lh*.65,'#fff','800','center',lw*.78);
+   // White premium plaque significantly improves contrast for blue/dark logos.
+   const corner=Math.min(lh*.20,lw*.12);
+   fillRound(c,x,y,lw,lh,corner,'#ffffff');
+   c.save();
+   c.strokeStyle='#d8e8e9';c.lineWidth=Math.max(1,W*.0018);
+   c.beginPath();c.roundRect(x,y,lw,lh,corner);c.stroke();
+   c.restore();
+   if(S.badgeLogo){
+     imageContain(c,S.badgeLogo,x+lw*.045,y+lh*.055,lw*.91,lh*.89);
+   }else{
+     badgeText(c,company.slice(0,2).toUpperCase(),x+lw/2,y+lh*.73,lh*.55,accent,'850','center',lw*.8);
    }
  };
  const line=(x,y,width,col='#dfe5ef')=>{c.fillStyle=col;c.fillRect(x,y,width,Math.max(1,H*.003))};
@@ -302,9 +346,9 @@ function renderBadge(dpi=170,side=S.badgeSide){
    // Landscape CR80 badge, 86 × 54 mm.
    c.fillStyle=accent;c.fillRect(0,0,W,H*.247);
    c.fillStyle='#ffffff13';c.beginPath();c.arc(W*.91,-H*.04,H*.42,0,Math.PI*2);c.fill();
-   logo(W*.047,H*.044,W*.113,H*.162);
-   badgeText(c,company,W*.188,H*.142,H*.088,'#fff','850','left',W*.76,H*.066);
-   badgeText(c,'CARTE PROFESSIONNELLE',W*.188,H*.211,H*.042,'#e6eef9','750','left',W*.72);
+   logo(W*.035,H*.032,W*.216,H*.193);
+   badgeText(c,company,W*.279,H*.142,H*.088,'#fff','850','left',W*.69,H*.066);
+   badgeText(c,'CARTE PROFESSIONNELLE',W*.279,H*.211,H*.042,'#e6eef9','750','left',W*.66);
    if(side==='front'){
      badgeRoundPortrait(c,S.badgePhoto,W*.163,H*.606,H*.438,accent);
      const x=W*.33,tw=W*.43;
@@ -320,15 +364,17 @@ function renderBadge(dpi=170,side=S.badgeSide){
      drawMatriculeQR(c,info.id,qx,H*.46,qs,accent);
      badgeText(c,'SCAN',qx+qs/2,H*.906,H*.045,accent,'850','center',qs);
    }else{
-     badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.387,H*.074,accent,'850','center',W*.86);
-     badgeText(c,person,W*.5,H*.510,H*.074,'#1d2b48','800','center',W*.89,H*.06);
+     c.fillStyle='#edf3f5';c.fillRect(0,H*.826,W,H*.146);
+     badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.355,H*.074,accent,'850','center',W*.86);
+     badgeText(c,person,W*.5,H*.457,H*.075,'#1d2b48','800','center',W*.89,H*.06);
      drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',
-       W*.5,H*.620,W*.82,H*.052,H*.068,'#43536b',2);
-     if(info.phone)badgeText(c,info.phone,W*.5,H*.738,H*.049,'#52627b','700','center',W*.72);
-     c.fillStyle='#edf3f5';c.fillRect(0,H*.78,W,H*.195);
-     c.fillStyle=accent;c.fillRect(0,H*.972,W,H*.028);
-     badgeText(c,idLabel,W*.073,H*.846,H*.048,'#64758e','830','left',W*.69);
-     badgeText(c,matrix,W*.073,H*.938,H*.079,'#1a2c48','850','left',W*.69,H*.06);
+       W*.5,H*.554,W*.83,H*.049,H*.060,'#43536b',2);
+     if(info.phone)badgeText(c,info.phone,W*.5,H*.694,H*.049,'#52627b','700','center',W*.72);
+     badgeText(c,'Créé par BTDIGIT',W*.073,H*.753,H*.050,accent,'850','left',W*.66);
+     badgeText(c,'hamapixel.github.io/nexora-technologies/',W*.073,H*.812,H*.038,'#415673','710','left',W*.685,H*.031);
+     badgeText(c,idLabel,W*.073,H*.884,H*.048,'#64758e','830','left',W*.69);
+     badgeText(c,matrix,W*.073,H*.948,H*.076,'#1a2c48','850','left',W*.69,H*.059);
+     c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
      drawMatriculeQR(c,info.id,W*.805,H*.711,W*.168,accent);
    }
    if(side==='front'){c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027)}
@@ -336,7 +382,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
    // Portrait CR80 badge, 54 × 86 mm.
    c.fillStyle=accent;c.fillRect(0,0,W,H*.264);
    c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.82,H*.055,W*.51,0,Math.PI*2);c.fill();
-   logo(W*.366,H*.033,W*.268,H*.11);
+   logo(W*.318,H*.024,W*.364,H*.137);
    badgeText(c,company,W*.5,H*.204,H*.057,'#fff','850','center',W*.9,H*.047);
    badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.249,H*.032,'#edf6f6','750','center',W*.87);
    if(side==='front'){
@@ -351,15 +397,17 @@ function renderBadge(dpi=170,side=S.badgeSide){
      if(info.phone)badgeText(c,info.phone,x,H*.952,H*.033,'#52637d','650','left',tw);
      drawMatriculeQR(c,info.id,W*.658,H*.768,W*.275,accent);
    }else{
-     badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.348,H*.056,accent,'850','center',W*.91,H*.047);
-     badgeText(c,person,W*.5,H*.432,H*.068,'#192c49','850','center',W*.91,H*.052);
+     badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.342,H*.056,accent,'850','center',W*.91,H*.047);
+     badgeText(c,person,W*.5,H*.419,H*.068,'#192c49','850','center',W*.91,H*.052);
      drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',
-       W*.5,H*.525,W*.81,H*.043,H*.053,'#42526b',3);
-     if(info.phone)badgeText(c,info.phone,W*.5,H*.696,H*.043,'#52647d','730','center',W*.86);
-     c.fillStyle='#eef4f6';c.fillRect(0,H*.741,W,H*.232);
-     badgeText(c,idLabel,W*.07,H*.800,H*.039,'#687991','850','left',W*.55);
-     badgeText(c,matrix,W*.07,H*.867,H*.052,'#1b2d4d','850','left',W*.54,H*.039);
-     badgeText(c,'VALIDITÉ : '+info.expiry,W*.07,H*.937,H*.036,'#536780','710','left',W*.56);
+       W*.5,H*.505,W*.85,H*.041,H*.052,'#42526b',3);
+     if(info.phone)badgeText(c,info.phone,W*.5,H*.667,H*.043,'#52647d','730','center',W*.86);
+     badgeText(c,'Créé par BTDIGIT',W*.075,H*.719,H*.040,accent,'850','left',W*.85);
+     badgeText(c,'hamapixel.github.io/nexora-technologies/',W*.075,H*.755,H*.027,'#43546e','730','left',W*.87,H*.023);
+     c.fillStyle='#eef4f6';c.fillRect(0,H*.781,W,H*.192);
+     badgeText(c,idLabel,W*.07,H*.827,H*.038,'#687991','850','left',W*.55);
+     badgeText(c,matrix,W*.07,H*.883,H*.052,'#1b2d4d','850','left',W*.54,H*.039);
+     badgeText(c,'VALIDITÉ : '+info.expiry,W*.07,H*.945,H*.036,'#536780','710','left',W*.56);
      drawMatriculeQR(c,info.id,W*.662,H*.760,W*.275,accent);
    }
    c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
