@@ -106,11 +106,11 @@
     <div><div class="panel"><div class="panel-head"><h2 class="panel-title">Détails du collaborateur</h2><span class="panel-hint">Personnalisable</span></div><div class="panel-body">
       <div class="two"><div class="field"><label class="label" for="employee">NOM COMPLET</label><input id="employee" class="input" value="Aminata Traoré" maxlength="65"></div><div class="field"><label class="label" for="role">FONCTION</label><input id="role" class="input" value="Responsable commerciale" maxlength="65"></div></div>
       <div class="field"><label class="label" for="badgeCompany">ENTREPRISE</label><input id="badgeCompany" class="input" value="NOVA SOLUTIONS" maxlength="65"></div>
-      <div class="two"><div class="field"><label class="label" for="employeeId">MATRICULE</label><input id="employeeId" class="input" value="EMP-2026-001" maxlength="32"></div><div class="field"><label class="label" for="badgeExpiry">VALIDITÉ</label><input id="badgeExpiry" class="input" value="12/2027" maxlength="24"></div></div>
+      <div class="two"><div class="field"><label class="label" for="employeeId">MATRICULE</label><input id="employeeId" class="input" value="MTRC-2026-001" maxlength="32" autocomplete="off"><button type="button" id="generateEmployeeId" class="button secondary block" style="margin-top:8px">↻ Générer un nouveau matricule</button></div><div class="field"><label class="label" for="badgeExpiry">VALIDITÉ</label><input id="badgeExpiry" class="input" value="12/2027" maxlength="24"></div></div>
       <div class="field"><label class="label" for="badgePhone">TÉLÉPHONE DE L'ENTREPRISE</label><input id="badgePhone" class="input" placeholder="+223 00 00 00 00" maxlength="35"></div>
       <div class="two"><div class="field"><label class="label">PHOTO EMPLOYÉ</label><label class="file-drop" style="min-height:62px;padding:11px"><span class="upload-icon" style="width:32px;height:32px;font-size:15px">↥</span><div><strong>Importer</strong><span>ou photo du module 1</span></div><input id="badgePhotoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label></div><div class="field"><label class="label">LOGO ENTREPRISE</label><label class="file-drop" style="min-height:62px;padding:11px"><span class="upload-icon" style="width:32px;height:32px;font-size:15px">↥</span><div><strong>Importer</strong><span>PNG recommandé</span></div><input id="badgeLogoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
       <div class="rule"></div><div class="section"><label class="label">ORIENTATION</label><div class="design-choice" style="grid-template-columns:1fr 1fr" id="badgeOrient"><button class="active" data-orient="landscape"><span class="small-icon">▰</span>Horizontal 86 × 54</button><button data-orient="portrait"><span class="small-icon">▥</span>Vertical 54 × 86</button></div></div>
-      <div class="section"><label class="label">FACE DU BADGE — CLIQUER POUR CHANGER</label><div class="face-tabs" id="badgeSides" aria-label="Choisir la face du badge"><button type="button" class="active" data-badge-side="front" aria-pressed="true">Recto · Employé</button><button type="button" data-badge-side="back" aria-pressed="false">Verso · Entreprise</button></div><p class="frontback-hint">Chaque face est personnalisable. L'impression crée deux pages A4 assorties.</p></div>
+      <div class="section"><div class="status ok" id="badgeQrStatus" role="status">Le QR code encode le matricule affiché. Le scan renvoie ce code, sans validation automatique d’identité.</div></div><div class="section"><label class="label">FACE DU BADGE — CLIQUER POUR CHANGER</label><div class="face-tabs" id="badgeSides" aria-label="Choisir la face du badge"><button type="button" class="active" data-badge-side="front" aria-pressed="true">Recto · Employé</button><button type="button" data-badge-side="back" aria-pressed="false">Verso · Entreprise</button></div><p class="frontback-hint">Chaque face est personnalisable. L'impression crée deux pages A4 assorties.</p></div>
       <div class="section"><label class="label" for="badgeBackMessage">MESSAGE AU VERSO</label><input class="input" id="badgeBackMessage" value="Si trouvé, merci de retourner ce badge à l’entreprise." maxlength="115"></div>
       <div class="section"><label class="label">IMPRESSION DES BADGES</label><div class="print-options"><div><label class="label" for="badgePaperOrient">FEUILLE A4</label><select class="select" id="badgePaperOrient"><option value="portrait">Portrait</option><option value="landscape">Paysage</option></select></div><div><label class="label" for="badgeCopies">EXEMPLAIRES</label><select class="select" id="badgeCopies"><option value="auto">Max. sur A4</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option><option value="9">9</option></select></div></div><p class="mini">Impression recto-verso en taille réelle. Testez d'abord une feuille pour vérifier l'alignement et le retournement.</p></div>
       <div class="section"><label class="label">COULEUR PRINCIPALE</label><div class="swatches" id="badgeSwatches"><button title="Bleu nuit" class="swatch active" data-accent="#2a416f" style="background:#2a416f"></button><button title="Indigo" class="swatch" data-accent="#525ddb" style="background:#525ddb"></button><button title="Vert" class="swatch" data-accent="#157a65" style="background:#157a65"></button><button title="Bordeaux" class="swatch" data-accent="#823b5b" style="background:#823b5b"></button><button title="Noir" class="swatch" data-accent="#222b38" style="background:#222b38"></button></div></div>
@@ -146,6 +146,7 @@
 <div class="footerline">PhotoID Studio Premium · Une édition BTDIGIT · Les fichiers sont générés sur votre ordinateur</div>
 </div></main></div>
 <div id="toast" class="toast" role="status"></div>
+<script src="./vendor/qrcode-generator.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), dpr=mm=>mm*300/25.4, clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
@@ -175,7 +176,7 @@ function initUI(){
  ['brightness','contrast'].forEach(id=>$(id).addEventListener('input',e=>{S[id]=Number(e.target.value);drawPhoto()}));
  $('resetPhoto').addEventListener('click',()=>{S.panX=0;S.panY=0;S.photoZoom=1;$('photoZoom').value=100;$('zoomLabel').textContent='100 %';drawPhoto();toast('Cadrage recentré.')});
  setupGroup('badgeOrient','orient',v=>{S.badgeOrient=v;drawBadge()});setupGroup('badgeSides','badgeSide',v=>{S.badgeSide=v;drawBadge()});setupGroup('badgeSwatches','accent',v=>{S.badgeAccent=v;drawBadge()});setupGroup('bizTemplates','template',v=>{S.bizTemplate=v;S.bizAccent=({prestige:'#273d71',corporate:'#315bb0',minimal:'#46566d',luxe:'#b79557'})[v]||'#273d71';updateSelect('bizSwatches','accent',S.bizAccent);drawBiz()});setupGroup('bizSwatches','accent',v=>{S.bizAccent=v;drawBiz()});setupGroup('bizSides','side',v=>{S.bizSide=v;drawBiz()});
- ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone','badgeBackMessage'].forEach(id=>$(id).addEventListener('input',drawBadge));$('badgeFlip').addEventListener('click',()=>{S.badgeSide=S.badgeSide==='front'?'back':'front';updateSelect('badgeSides','badgeSide',S.badgeSide);drawBadge()});$('bizFlip').addEventListener('click',()=>{S.bizSide=S.bizSide==='front'?'back':'front';updateSelect('bizSides','side',S.bizSide);drawBiz()});
+ ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone','badgeBackMessage'].forEach(id=>$(id).addEventListener('input',drawBadge));$('generateEmployeeId').addEventListener('click',()=>{try{$('employeeId').value=freshMatricule();drawBadge();toast('Nouveau matricule et QR code générés. Sauvegardez votre carte.')}catch(e){toast(e.message)}});$('badgeFlip').addEventListener('click',()=>{S.badgeSide=S.badgeSide==='front'?'back':'front';updateSelect('badgeSides','badgeSide',S.badgeSide);drawBadge()});$('bizFlip').addEventListener('click',()=>{S.bizSide=S.bizSide==='front'?'back':'front';updateSelect('bizSides','side',S.bizSide);drawBiz()});
  ['bizName','bizRole','bizCompany','bizPhone','bizEmail','bizWebsite','bizAddress'].forEach(id=>$(id).addEventListener('input',drawBiz));document.querySelectorAll('[data-preview-side]').forEach(btn=>btn.addEventListener('click',()=>{S.bizSide=btn.dataset.previewSide;updateSelect('bizSides','side',S.bizSide);drawBiz()}));
  $('photoPng').onclick=()=>exportImage('photos');$('badgePng').onclick=()=>exportImage('badges');$('bizPng').onclick=()=>exportImage('cartes');
  $('photoPrint').onclick=()=>printImage('photos');$('badgePrint').onclick=()=>printImage('badges');$('bizPrint').onclick=()=>printImage('cartes');
@@ -198,6 +199,45 @@ finally{S.loadingFace=false;$('autoFace').disabled=false;drawPhoto()}}
 function applyFaceFrame(bb){const [fw,fh]=S.photoSize.split('x').map(Number),im=S.photo,w=fw*4,h=fh*4,base=Math.max(w/im.width,h/im.height),desired=Math.max((w*.43)/(bb.width*base),(h*.39)/(bb.height*base));S.photoZoom=clamp(desired,1,4);const scale=base*S.photoZoom,fcx=bb.originX+bb.width/2,fcy=bb.originY+bb.height/2,dx=w*.5-fcx*scale,dy=h*.40-fcy*scale;S.panX=(dx-(w-im.width*scale)/2)/w;S.panY=(dy-(h-im.height*scale)/2)/h;$('photoZoom').value=Math.round(S.photoZoom*100);$('zoomLabel').textContent=Math.round(S.photoZoom*100)+' %'}
 async function removeBackgroundAI(){if(!S.photoFile){toast('Importez d’abord une photo.');return}if(S.loadingBg)return;S.loadingBg=true;$('removeBg').disabled=true;$('removeBg').textContent='⌛ Traitement IA en cours…';status('Téléchargement du modèle IA si nécessaire, puis détourage local…');try{const lib=await import('https://esm.sh/@imgly/background-removal@1.7.0?bundle');const remove=lib.default||lib.removeBackground;if(typeof remove!=='function')throw new Error('Module IA non disponible');const blob=await remove(S.photoFile,{progress:(key,current,total)=>{if(total>0)status(`Modèle IA : ${Math.round(current/total*100)} % téléchargé…`)}});S.cutout=await fileImage(new File([blob],'cutout.png',{type:'image/png'}));S.bg='#ffffff';document.querySelectorAll('#bgChips button').forEach(b=>b.classList.toggle('active',b.dataset.bg==='#ffffff'));status('Fond retiré par l’IA. Choisissez maintenant le fond blanc, bleu ou gris.','ok');drawPhoto()}catch(e){status('Détourage IA indisponible : vérifiez votre connexion et votre navigateur. La photo originale est conservée.','error');console.warn('Background-removal error',e)}finally{S.loadingBg=false;$('removeBg').disabled=false;$('removeBg').textContent='✦ Détourer le sujet avec l’IA'}}
 function badgeInfo(){return {name:$('employee').value,role:$('role').value,company:$('badgeCompany').value,id:$('employeeId').value,expiry:$('badgeExpiry').value,phone:$('badgePhone').value}}
+
+function freshMatricule(){
+ const year=new Date().getFullYear();
+ if(!globalThis.crypto||typeof crypto.getRandomValues!=='function')throw new Error('Votre navigateur ne permet pas la génération sécurisée du matricule.');
+ const bytes=new Uint8Array(4);crypto.getRandomValues(bytes);
+ const token=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
+ return 'MTRC-'+year+'-'+token;
+}
+function qrForMatricule(raw){
+ const value=String(raw||'').trim();
+ if(!value)return null;
+ if(typeof qrcode!=='function')throw new Error('La bibliothèque QR locale est manquante : vérifiez vendor/qrcode-generator.js');
+ const code=qrcode(0,'M');
+ code.addData(value);
+ code.make();
+ return code;
+}
+function drawMatriculeQR(ctx,matricule,x,y,size,accent){
+ // QR réel noir sur blanc, 4 modules de marge (quiet zone), sans logo ni déformation.
+ const qr=qrForMatricule(matricule);
+ ctx.save();
+ fillRound(ctx,x,y,size,size,Math.max(3,size*.055),'#ffffff');
+ ctx.strokeStyle=accent;ctx.lineWidth=Math.max(1,size*.009);
+ ctx.strokeRect(x,y,size,size);
+ if(qr){
+  const count=qr.getModuleCount(),quiet=4,whole=count+quiet*2,step=size/whole;
+  ctx.fillStyle='#121c2c';
+  for(let row=0;row<count;row++)for(let col=0;col<count;col++){
+    if(qr.isDark(row,col)){
+      // Subpixel positions can blur small modules; use complete filled squares.
+      ctx.fillRect(x+(col+quiet)*step,y+(row+quiet)*step,step+.15,step+.15);
+    }
+  }
+ }else{
+  letter(ctx,'QR',x+size/2,y+size*.58,size*.19,'#8995a9',800,'center');
+ }
+ ctx.restore();
+}
+
 function drawWrapped(ctx,raw,x,y,maxWidth,fontSize,lineHeight,color,maxLines=3){
  const words=String(raw).trim().split(/\s+/).filter(Boolean);ctx.font=`700 ${fontSize}px Inter,Arial,sans-serif`;
  let lines=[],line='';
@@ -228,17 +268,38 @@ function renderBadge(dpi=170,side=S.badgeSide){const horizontal=S.badgeOrient===
    const header=H*.26;solid(c,accent,W,header);c.fillStyle='#ffffff11';c.beginPath();c.arc(W*.91,H*.0,H*.4,0,Math.PI*2);c.fill();c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.75,H*.25,H*.25,0,Math.PI*2);c.fill();
    if(S.badgeLogo){imageContain(c,S.badgeLogo,W*.065,H*.045,W*.115,H*.16)}else{fillRound(c,W*.06,H*.06,H*.08,H*.13,8,'#ffffff27');letter(c,'N',W*.10,H*.147,H*.09,'#fff',900,'center')}
    letter(c,info.company||'VOTRE ENTREPRISE',W*.2,H*.14,H*.065,'#ffffff',840,'left',W*.73);letter(c,'CARTE PROFESSIONNELLE',W*.2,H*.205,H*.027,'#e7eafb',700);
-   const px=W*.065,py=H*.335,pw=W*.275,ph=H*.54;fillRound(c,px-4,py-4,pw+8,ph+8,Math.max(7,W*.025),'#e7ecf6');c.save();c.beginPath();c.roundRect(px,py,pw,ph,Math.max(5,W*.019));c.clip();if(S.badgePhoto)imageCover(c,S.badgePhoto,px,py,pw,ph);else{c.fillStyle='#e3e9f4';c.fillRect(px,py,pw,ph);letter(c,'PHOTO',px+pw/2,py+ph/2,H*.055,'#9ba7bd',800,'center')}c.restore();
-   let x=W*.395;letter(c,info.name||'NOM COMPLET',x,H*.44,H*.089,'#1c2c4c',870,'left',W*.54);letter(c,info.role||'Fonction',x,H*.535,H*.057,accent,700,'left',W*.54);
-   c.fillStyle='#dfe5f2';c.fillRect(x,H*.6,W*.52,2);letter(c,'MATRICULE',x,H*.685,H*.032,'#8691a6',800);letter(c,info.id,x,H*.762,H*.055,'#30405e',650,'left',W*.54);letter(c,'VALIDITÉ : '+info.expiry,x,H*.85,H*.034,'#6e7d96',600,'left',W*.54);if(info.phone)letter(c,info.phone,x,H*.933,H*.035,'#75839b',500,'left',W*.54);solid(c,accent,W,H*.027);c.fillRect(0,H*.973,W,H*.027);
+   const px=W*.051,py=H*.34,pw=W*.241,ph=H*.535;
+   fillRound(c,px-4,py-4,pw+8,ph+8,Math.max(7,W*.022),'#e7ecf6');
+   c.save();c.beginPath();c.roundRect(px,py,pw,ph,Math.max(5,W*.016));c.clip();
+   if(S.badgePhoto)imageCover(c,S.badgePhoto,px,py,pw,ph);
+   else{c.fillStyle='#e3e9f4';c.fillRect(px,py,pw,ph);letter(c,'PHOTO',px+pw/2,py+ph/2,H*.052,'#9ba7bd',800,'center')}
+   c.restore();
+   const x=W*.327,textW=W*.419,qrX=W*.791,qrSide=W*.176;
+   letter(c,info.name||'NOM COMPLET',x,H*.44,H*.083,'#1c2c4c',870,'left',textW);
+   letter(c,info.role||'Fonction',x,H*.535,H*.055,accent,700,'left',textW);
+   c.fillStyle='#dfe5f2';c.fillRect(x,H*.596,textW,2);
+   letter(c,'MATRICULE',x,H*.68,H*.034,'#8691a6',800);
+   letter(c,info.id||'À GÉNÉRER',x,H*.76,H*.051,'#30405e',750,'left',textW);
+   letter(c,'VALIDITÉ : '+info.expiry,x,H*.85,H*.034,'#6e7d96',600,'left',textW);
+   if(info.phone)letter(c,info.phone,x,H*.932,H*.032,'#75839b',500,'left',textW);
+   c.fillStyle='#dfe5f2';c.fillRect(W*.769,H*.34,2,H*.58);
+   drawMatriculeQR(c,info.id,qrX,H*.44,qrSide,accent);
+   letter(c,'SCAN',qrX+qrSide/2,H*.91,H*.043,accent,850,'center',qrSide);
+   c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
  }else{
    solid(c,accent,W,H*.32);c.fillStyle='#ffffff0d';c.beginPath();c.arc(W*.7,H*.15,W*.55,0,Math.PI*2);c.fill();
    if(S.badgeLogo)imageContain(c,S.badgeLogo,W*.30,H*.045,W*.4,H*.1);else letter(c,(info.company||'E')[0],W*.5,H*.12,H*.11,'#fff',900,'center');letter(c,info.company||'ENTREPRISE',W*.5,H*.205,H*.053,'#fff',830,'center',W*.9);
    const px=W*.24,py=H*.254,pw=W*.52,ph=H*.32;fillRound(c,px-5,py-5,pw+10,ph+10,10,'#ffffff');c.save();c.beginPath();c.roundRect(px,py,pw,ph,6);c.clip();if(S.badgePhoto)imageCover(c,S.badgePhoto,px,py,pw,ph);else{c.fillStyle='#e7ecf6';c.fillRect(px,py,pw,ph);letter(c,'PHOTO',W*.5,py+ph*.52,H*.045,'#b0bacf',700,'center')}c.restore();
    letter(c,info.name||'NOM COMPLET',W*.5,H*.654,H*.066,'#1f2d49',880,'center',W*.91);letter(c,info.role||'Fonction',W*.5,H*.703,H*.043,accent,700,'center',W*.91);c.fillStyle='#e7ebf4';c.fillRect(W*.14,H*.735,W*.72,2);
-   letter(c,'ID  '+info.id,W*.5,H*.795,H*.046,'#36445f',650,'center',W*.9);letter(c,'VALIDITÉ  '+info.expiry,W*.5,H*.848,H*.035,'#7f8da5',650,'center');if(info.phone)letter(c,info.phone,W*.5,H*.912,H*.035,'#7f8da5',650,'center');c.fillStyle=accent;c.fillRect(0,H*.971,W,H*.029);
+   const colX=W*.08,tw=W*.53,qrSide=W*.28,qrX=W*.66;
+   letter(c,'MATRICULE',colX,H*.786,H*.027,'#8190a5',750,'left',tw);
+   letter(c,info.id||'À GÉNÉRER',colX,H*.832,H*.037,'#36445f',750,'left',tw);
+   letter(c,'VALIDITÉ '+info.expiry,colX,H*.889,H*.029,'#7f8da5',620,'left',tw);
+   if(info.phone)letter(c,info.phone,colX,H*.94,H*.026,'#7f8da5',620,'left',tw);
+   drawMatriculeQR(c,info.id,qrX,H*.767,qrSide,accent);
+   c.fillStyle=accent;c.fillRect(0,H*.971,W,H*.029);
  }return {cv,w,h}}
-function drawBadge(){const {cv,w,h}=renderBadge(170);const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
+function drawBadge(){const {cv,w,h}=renderBadge(170);const code=$('employeeId').value.trim();$('badgeQrStatus').textContent=code?'QR code lié au matricule : '+code+' — scanner affiche ce matricule. Ce n’est pas une preuve de validité.':'Saisissez ou générez un matricule pour créer le QR code.';const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
 function bizInfo(){return {name:$('bizName').value,role:$('bizRole').value,company:$('bizCompany').value,phone:$('bizPhone').value,email:$('bizEmail').value,web:$('bizWebsite').value,address:$('bizAddress').value}}
 function renderBiz(dpi=160,side=S.bizSide){
  const w=90,h=50,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),
@@ -366,7 +427,7 @@ function drawBiz(){
   btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
  });
 }
-function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges')return renderBadge(dpi);return renderBiz(dpi)}
+function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges'){if(!$('employeeId').value.trim())throw new Error('Générez ou saisissez un matricule avant export.');return renderBadge(dpi);}return renderBiz(dpi)}
 function createSheet(art,dpi=300,orientation='portrait',copies='auto',reverse=false){
  const pw=orientation==='landscape'?297:210,ph=orientation==='landscape'?210:297,margin=7,gap=4,cv=document.createElement('canvas'),p=dpi/25.4,c=canvasSize(cv,pw*p,ph*p);
  solid(c,'#ffffff',cv.width,cv.height);
@@ -393,7 +454,7 @@ function printImage(which){
   }else{
    const orient=$(which==='badges'?'badgePaperOrient':'bizPaperOrient').value;
    const copies=$(which==='badges'?'badgeCopies':'bizCopies').value;
-   const make=(side)=>which==='badges'?renderBadge(300,side):renderBiz(300,side);
+   if(which==='badges'&&!$('employeeId').value.trim())throw new Error('Générez ou saisissez un matricule avant impression.');const make=(side)=>which==='badges'?renderBadge(300,side):renderBiz(300,side);
    pages=[createSheet(make('front'),300,orient,copies,false),createSheet(make('back'),300,orient,copies,true)];
   }
   const win=window.open('','_blank');if(!win)throw new Error('Autorisez les fenêtres d’impression pour créer le PDF.');
