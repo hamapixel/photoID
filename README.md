@@ -14,6 +14,7 @@ Quand GitHub Pages est activé, rendez-vous sur :
 - Cadrage du visage assisté par MediaPipe
 - Détourage du fond par IA avec @imgly/background-removal
 - Badges salariés : logo, nom, fonction, matricule, portrait, formats horizontal 86 × 54 mm et vertical 54 × 86 mm, recto employé et verso entreprise cliquables
+- **QR code de matricule intégré** : génération réelle en JavaScript depuis le champ matricule (ex. `MTRC-2026-001`), mise à jour immédiate, impression sur le recto à droite du badge horizontal et en bas à droite du badge vertical. Un bouton permet de créer un nouveau matricule aléatoire au format `MTRC-AAAA-XXXXXXXX`.
 - Cartes de visite : **4 modèles Prestige, Corporate, Minimal et Luxe**, choix avec miniatures cliquables, couleurs personnalisables, logo, recto et verso cliquables, format 90 × 50 mm
 - Impression de badges et cartes de visite en **recto-verso sur deux pages A4**, à l'échelle 100 %, avec choix de feuille portrait/paysage, quantité et positions miroirs pour l'alignement au découpage
 - Interface entièrement en français, adaptée aux PC et aux mobiles
@@ -27,6 +28,15 @@ Quand GitHub Pages est activé, rendez-vous sur :
 5. Téléchargez une face en PNG ou créez la planche A4 recto-verso. L'export PNG est généré à 300 DPI.
 
 Le logiciel travaille dans le navigateur sans compte et les logos importés ne sont pas envoyés vers un backend PhotoID.
+
+## QR code du matricule (hors ligne)
+
+- La bibliothèque [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) est incluse dans `vendor/qrcode-generator.js` (licence MIT conservée dans `vendor/LICENSE.qrcode-generator.txt`). **Aucun service QR distant** n'est appelé.
+- Dans **Badges entreprise**, saisissez le matricule ou cliquez sur **Générer un nouveau matricule**. Le QR code change automatiquement lorsque le matricule change.
+- Le QR code contient **uniquement la chaîne du matricule**. Un téléphone équipé d'un lecteur QR affichera par exemple `MTRC-2026-001`.
+- Les mêmes modules QR figurent sur le PNG exporté et la planche A4 recto-verso.
+- Les codes générés aléatoirement réduisent les risques de collision mais **ne garantissent pas une unicité absolue entre entreprises ou appareils**. Ils ne créent aucun registre de salariés.
+- **Scanner le QR n'authentifie pas le badge** : une véritable vérification de statut ou d'identité nécessiterait un répertoire d'employés et un système d'authentification géré par l'entreprise.
 
 ## Impression recto-verso
 
