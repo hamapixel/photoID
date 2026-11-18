@@ -33,6 +33,36 @@
 .quick-steps{grid-template-columns:1fr;gap:6px}
 .quick-step{padding:8px 12px}
 }
+
+.template-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.template-option{display:flex;flex-direction:column;gap:9px;text-align:left;border:1px solid #e1e7f1;border-radius:14px;background:#fff;padding:9px;color:#25324c;transition:.2s}
+.template-option:hover{transform:translateY(-2px);box-shadow:0 10px 22px #27375113;border-color:#98a6e5}
+.template-option.active{border:2px solid #6273de;padding:8px;box-shadow:0 0 0 3px #6378eb12;background:#f9faff}
+.template-option:focus-visible,.business-thumb:focus-visible{outline:3px solid #677cde;outline-offset:2px}
+.template-art{display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;border-radius:8px;aspect-ratio:1.8;width:100%;padding:11px 13px;font-size:10px}
+.template-symbol{font:800 17px Georgia,serif;position:relative;z-index:1}
+.template-sample{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px}
+.template-sample b{font-size:10px;letter-spacing:.4px}.template-sample em{font-style:normal;font-size:8px;opacity:.75}
+.template-art.prestige{background:linear-gradient(110deg,#213454 0 36%,#f5f0e6 36%);color:#d0ae70}
+.template-art.prestige .template-sample{margin-left:36%;color:#213454}
+.template-art.prestige:after{content:"";position:absolute;top:0;bottom:0;left:35%;width:2px;background:#cfad70}
+.template-art.corporate{background:linear-gradient(115deg,#284d99 0 34%,#fff 34%);color:#fff}
+.template-art.corporate .template-sample{margin-left:35%;color:#22385d}
+.template-art.corporate:after{content:"";position:absolute;right:-8%;top:-30%;width:45%;height:80%;background:#edf3ff;border-radius:50%}
+.template-art.minimal{background:#fbfaf7;color:#273749;border:1px solid #e8e6e0}
+.template-art.minimal:before{content:"";position:absolute;top:12%;bottom:12%;left:6%;width:3px;background:#4a6279}
+.template-art.minimal .template-symbol,.template-art.minimal .template-sample{margin-left:8%}
+.template-art.luxe{background:radial-gradient(circle at 100% 0%,#47412d,#171a1d 54%);color:#d5b978;border:1px solid #5d5239}
+.template-art.luxe:before{content:"";position:absolute;inset:7px;border:1px solid #b6995c77;border-radius:3px}
+.template-art.luxe .template-sample b{color:#f4e2bb}
+.template-caption{display:flex;flex-direction:column;gap:3px;padding:0 3px 3px}.template-caption b{font-size:12px}.template-caption small{font-size:10px;color:#7a879d}
+.business-mini-previews{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px 20px}
+.business-thumb{border:1px solid #e1e7f2;border-radius:13px;background:white;padding:10px;display:grid;gap:8px;text-align:center;transition:.2s}
+.business-thumb:hover{background:#f7f9ff;border-color:#acb9f0}
+.business-thumb.active{border-color:#6379e6;background:#f1f4ff;box-shadow:inset 0 0 0 1px #8498ee}
+.business-thumb canvas{display:block;width:100%;height:auto;aspect-ratio:1.8;object-fit:contain;border-radius:6px;box-shadow:0 4px 13px #16234114}
+.business-thumb strong{font-size:11px;color:#35435c}
+@media(max-width:390px){.template-gallery{gap:8px}.template-art{padding:8px}.template-sample b{font-size:9px}}
 </style>
 </head>
 <body>
@@ -99,13 +129,18 @@
       <div class="field"><label class="label" for="bizWebsite">SITE WEB</label><input id="bizWebsite" class="input" value="www.exemple.com" maxlength="75"></div>
       <div class="field"><label class="label" for="bizAddress">ADRESSE</label><input id="bizAddress" class="input" value="Bamako, Mali" maxlength="100"></div>
       <div class="field"><label class="label">LOGO DE L'ENTREPRISE</label><label class="file-drop" style="min-height:60px;padding:11px"><span class="upload-icon" style="width:34px;height:34px;font-size:15px">↥</span><div><strong>Choisir un logo</strong><span>PNG avec fond transparent recommandé</span></div><input id="bizLogoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label></div>
-      <div class="rule"></div><div class="section"><label class="label">MODÈLE DE CARTE</label><div class="design-choice" id="bizTemplates"><button class="active" data-template="executive"><span class="small-icon">◩</span>Executive</button><button data-template="minimal"><span class="small-icon">▤</span>Minimal</button><button data-template="bold"><span class="small-icon">◈</span>Signature</button></div></div>
-      <div class="section"><label class="label">COULEUR DU THÈME</label><div class="swatches" id="bizSwatches"><button class="swatch active" data-accent="#273d71" title="Bleu nuit" style="background:#273d71"></button><button class="swatch" data-accent="#6353c8" title="Violet" style="background:#6353c8"></button><button class="swatch" data-accent="#167c73" title="Émeraude" style="background:#167c73"></button><button class="swatch" data-accent="#b2713b" title="Cuivre" style="background:#b2713b"></button><button class="swatch" data-accent="#202a36" title="Noir" style="background:#202a36"></button></div></div>
+      <div class="rule"></div><div class="section"><label class="label">MODÈLE DE CARTE</label><div class="template-gallery" id="bizTemplates" aria-label="Choisir le modèle de carte de visite">
+<button type="button" class="template-option active" data-template="prestige" aria-pressed="true"><span class="template-art prestige"><span class="template-symbol">P.</span><span class="template-sample"><b>PRESTIGE</b><em>Élégance & distinction</em></span></span><span class="template-caption"><b>Prestige</b><small>Bleu nuit & doré</small></span></button>
+<button type="button" class="template-option" data-template="corporate" aria-pressed="false"><span class="template-art corporate"><span class="template-symbol">C.</span><span class="template-sample"><b>CORPORATE</b><em>Professionnel & moderne</em></span></span><span class="template-caption"><b>Corporate</b><small>Bleu professionnel</small></span></button>
+<button type="button" class="template-option" data-template="minimal" aria-pressed="false"><span class="template-art minimal"><span class="template-symbol">M.</span><span class="template-sample"><b>MINIMAL</b><em>Simple & raffiné</em></span></span><span class="template-caption"><b>Minimal</b><small>Blanc & typographie</small></span></button>
+<button type="button" class="template-option" data-template="luxe" aria-pressed="false"><span class="template-art luxe"><span class="template-symbol">L.</span><span class="template-sample"><b>LUXE</b><em>Noir & or</em></span></span><span class="template-caption"><b>Luxe</b><small>Noir profond & doré</small></span></button>
+</div><p class="mini" style="margin-top:10px">Cliquez sur un modèle : le recto et le verso sont mis à jour automatiquement.</p></div>
+      <div class="section"><label class="label">COULEUR DU THÈME</label><div class="swatches" id="bizSwatches"><button type="button" class="swatch active" data-accent="#273d71" title="Bleu nuit" aria-label="Bleu nuit" style="background:#273d71"></button><button type="button" class="swatch " data-accent="#315bb0" title="Bleu royal" aria-label="Bleu royal" style="background:#315bb0"></button><button type="button" class="swatch " data-accent="#46566d" title="Ardoise" aria-label="Ardoise" style="background:#46566d"></button><button type="button" class="swatch " data-accent="#b79557" title="Doré" aria-label="Doré" style="background:#b79557"></button><button type="button" class="swatch " data-accent="#167c73" title="Émeraude" aria-label="Émeraude" style="background:#167c73"></button><button type="button" class="swatch " data-accent="#202a36" title="Noir" aria-label="Noir" style="background:#202a36"></button></div></div>
       <div class="section"><label class="label">FACE À AFFICHER — CLIQUER</label><div class="chipset" id="bizSides"><button class="chip active" data-side="front">Recto</button><button class="chip" data-side="back">Verso</button></div></div>
       <div class="section"><label class="label">IMPRESSION DES CARTES DE VISITE</label><div class="print-options"><div><label class="label" for="bizPaperOrient">FEUILLE A4</label><select class="select" id="bizPaperOrient"><option value="portrait">Portrait</option><option value="landscape">Paysage</option></select></div><div><label class="label" for="bizCopies">EXEMPLAIRES</label><select class="select" id="bizCopies"><option value="auto">Max. sur A4</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></div></div></div>
       <div class="actionbar"><button id="bizPng" class="button primary">⬇ Face PNG</button><button id="bizPrint" class="button white">▣ Recto-verso A4 / PDF</button></div>
     </div></div><div class="help-card"><b>Un design à votre image</b><p>Modifiez les informations et le logo : la carte se redessine instantanément. Le recto et le verso peuvent être exportés séparément pour l'impression.</p></div></div>
-    <div><div class="panel preview-panel"><div class="panel-head"><div><h2 class="panel-title">Votre carte de visite</h2><span class="panel-hint" id="bizMeta">Executive · Recto · 90 × 50 mm</span></div><span class="preview-meta">300 DPI</span></div><div class="canvas-zone landscape"><canvas id="bizCanvas" aria-label="Aperçu de carte de visite"></canvas></div><div class="preview-action"><button type="button" id="bizFlip" class="button secondary">↻ Voir le verso</button></div><p class="note">Format professionnel 90 × 50 mm. Pour l'impression recto-verso, exportez chaque côté et vérifiez l'alignement de votre imprimante.</p></div><div class="statstrip"><div class="statbox"><b>90×50</b><small>Dimensions (mm)</small></div><div class="statbox"><b>2 faces</b><small>Recto et verso</small></div><div class="statbox"><b>A4</b><small>Planche imprimable</small></div></div></div>
+    <div><div class="panel preview-panel"><div class="panel-head"><div><h2 class="panel-title">Votre carte de visite</h2><span class="panel-hint" id="bizMeta">Prestige · Recto · 90 × 50 mm</span></div><span class="preview-meta">300 DPI</span></div><div class="canvas-zone landscape"><canvas id="bizCanvas" aria-label="Aperçu de carte de visite"></canvas></div><div class="preview-action"><button type="button" id="bizFlip" class="button secondary">↻ Voir le verso</button></div><div class="business-mini-previews" aria-label="Aperçus cliquables recto-verso"><button type="button" class="business-thumb active" data-preview-side="front" aria-pressed="true"><canvas id="bizThumbFront" aria-hidden="true"></canvas><strong>Recto</strong></button><button type="button" class="business-thumb" data-preview-side="back" aria-pressed="false"><canvas id="bizThumbBack" aria-hidden="true"></canvas><strong>Verso</strong></button></div><p class="note">Format professionnel 90 × 50 mm. Pour l'impression recto-verso, exportez chaque côté et vérifiez l'alignement de votre imprimante.</p></div><div class="statstrip"><div class="statbox"><b>90×50</b><small>Dimensions (mm)</small></div><div class="statbox"><b>2 faces</b><small>Recto et verso</small></div><div class="statbox"><b>A4</b><small>Planche imprimable</small></div></div></div>
   </div>
 </section>
 <div class="footerline">PhotoID Studio Premium · Une édition BTDIGIT · Les fichiers sont générés sur votre ordinateur</div>
@@ -114,7 +149,7 @@
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id), dpr=mm=>mm*300/25.4, clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
-const S={view:'photos',photo:null,photoFile:null,cutout:null,face:null,photoZoom:1,panX:0,panY:0,bg:'original',count:8,photoRects:[],layout:null,photoSize:'35x45',paper:'A4',brightness:100,contrast:100,badgePhoto:null,badgeLogo:null,badgeOrient:'landscape',badgeSide:'front',badgeAccent:'#2a416f',bizLogo:null,bizTemplate:'executive',bizAccent:'#273d71',bizSide:'front',loadingFace:false,loadingBg:false};
+const S={view:'photos',photo:null,photoFile:null,cutout:null,face:null,photoZoom:1,panX:0,panY:0,bg:'original',count:8,photoRects:[],layout:null,photoSize:'35x45',paper:'A4',brightness:100,contrast:100,badgePhoto:null,badgeLogo:null,badgeOrient:'landscape',badgeSide:'front',badgeAccent:'#2a416f',bizLogo:null,bizTemplate:'prestige',bizAccent:'#273d71',bizSide:'front',loadingFace:false,loadingBg:false};
 const text=(v,fallback='')=>String(v==null?fallback:v).trim();let toastTimer;
 function toast(message){const el=$('toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3900)}
 function status(message,type=''){const el=$('photoStatus');el.textContent=message;el.className='status '+type}
@@ -139,14 +174,14 @@ function initUI(){
  $('photoZoom').addEventListener('input',e=>{S.photoZoom=Number(e.target.value)/100;$('zoomLabel').textContent=e.target.value+' %';drawPhoto()});
  ['brightness','contrast'].forEach(id=>$(id).addEventListener('input',e=>{S[id]=Number(e.target.value);drawPhoto()}));
  $('resetPhoto').addEventListener('click',()=>{S.panX=0;S.panY=0;S.photoZoom=1;$('photoZoom').value=100;$('zoomLabel').textContent='100 %';drawPhoto();toast('Cadrage recentré.')});
- setupGroup('badgeOrient','orient',v=>{S.badgeOrient=v;drawBadge()});setupGroup('badgeSides','badgeSide',v=>{S.badgeSide=v;drawBadge()});setupGroup('badgeSwatches','accent',v=>{S.badgeAccent=v;drawBadge()});setupGroup('bizTemplates','template',v=>{S.bizTemplate=v;drawBiz()});setupGroup('bizSwatches','accent',v=>{S.bizAccent=v;drawBiz()});setupGroup('bizSides','side',v=>{S.bizSide=v;drawBiz()});
+ setupGroup('badgeOrient','orient',v=>{S.badgeOrient=v;drawBadge()});setupGroup('badgeSides','badgeSide',v=>{S.badgeSide=v;drawBadge()});setupGroup('badgeSwatches','accent',v=>{S.badgeAccent=v;drawBadge()});setupGroup('bizTemplates','template',v=>{S.bizTemplate=v;S.bizAccent=({prestige:'#273d71',corporate:'#315bb0',minimal:'#46566d',luxe:'#b79557'})[v]||'#273d71';updateSelect('bizSwatches','accent',S.bizAccent);drawBiz()});setupGroup('bizSwatches','accent',v=>{S.bizAccent=v;drawBiz()});setupGroup('bizSides','side',v=>{S.bizSide=v;drawBiz()});
  ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone','badgeBackMessage'].forEach(id=>$(id).addEventListener('input',drawBadge));$('badgeFlip').addEventListener('click',()=>{S.badgeSide=S.badgeSide==='front'?'back':'front';updateSelect('badgeSides','badgeSide',S.badgeSide);drawBadge()});$('bizFlip').addEventListener('click',()=>{S.bizSide=S.bizSide==='front'?'back':'front';updateSelect('bizSides','side',S.bizSide);drawBiz()});
- ['bizName','bizRole','bizCompany','bizPhone','bizEmail','bizWebsite','bizAddress'].forEach(id=>$(id).addEventListener('input',drawBiz));
+ ['bizName','bizRole','bizCompany','bizPhone','bizEmail','bizWebsite','bizAddress'].forEach(id=>$(id).addEventListener('input',drawBiz));document.querySelectorAll('[data-preview-side]').forEach(btn=>btn.addEventListener('click',()=>{S.bizSide=btn.dataset.previewSide;updateSelect('bizSides','side',S.bizSide);drawBiz()}));
  $('photoPng').onclick=()=>exportImage('photos');$('badgePng').onclick=()=>exportImage('badges');$('bizPng').onclick=()=>exportImage('cartes');
  $('photoPrint').onclick=()=>printImage('photos');$('badgePrint').onclick=()=>printImage('badges');$('bizPrint').onclick=()=>printImage('cartes');
  initDrag();drawPhoto();drawBadge();drawBiz();
 }
-function updateSelect(id,attribute,value){$(id).querySelectorAll('button').forEach(b=>{const selected=b.dataset[attribute]===value;b.classList.toggle('active',selected);if(id==='badgeSides')b.setAttribute('aria-pressed',String(selected))})}
+function updateSelect(id,attribute,value){$(id).querySelectorAll('button').forEach(b=>{const selected=b.dataset[attribute]===value;b.classList.toggle('active',selected);if(['badgeSides','bizTemplates'].includes(id))b.setAttribute('aria-pressed',String(selected))})}
 function setupGroup(id,attribute,cb){$(id).querySelectorAll('button').forEach(btn=>btn.addEventListener('click',()=>{$(id).querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));cb(btn.dataset[attribute])}))}
 function photoLayout(){const [w,h]=S.photoSize.split('x').map(Number),[pw,ph]=S.paper==='A4'?[210,297]:[100,150],margin=5,gap=2;
  let best=null,capacity=0;for(let cols=1;cols<=Math.floor((pw-2*margin+gap)/(w+gap));cols++){const maxRows=Math.floor((ph-2*margin+gap)/(h+gap));capacity=Math.max(capacity,cols*maxRows);const rows=Math.ceil(S.count/cols);if(rows>maxRows)continue;const score=Math.abs(cols-rows)+(.001*cols);if(!best||score<best.score)best={cols,rows,score}}
