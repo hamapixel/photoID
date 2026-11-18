@@ -13,9 +13,19 @@ Quand GitHub Pages est activé, rendez-vous sur :
 - Photos d'identité : import, choix des formats 35 × 45 mm, quantité de photos, impression A4 ou 10 × 15 cm, export PNG
 - Cadrage du visage assisté par MediaPipe
 - Détourage du fond par IA avec @imgly/background-removal
-- Badges salariés : logo, nom, fonction, matricule, portrait, format horizontal/vertical
-- Cartes de visite : modèles, logo, recto/verso, impression
+- Badges salariés : logo, nom, fonction, matricule, portrait, formats horizontal 86 × 54 mm et vertical 54 × 86 mm, recto employé et verso entreprise cliquables
+- Cartes de visite : modèles, logo, recto et verso cliquables, format 90 × 50 mm
+- Impression de badges et cartes de visite en **recto-verso sur deux pages A4**, à l'échelle 100 %, avec choix de feuille portrait/paysage, quantité et positions miroirs pour l'alignement au découpage
 - Interface entièrement en français, adaptée aux PC et aux mobiles
+
+## Impression recto-verso
+
+1. Dans **Badges entreprise** ou **Cartes de visite**, cliquez sur **Recto** ou **Verso** pour prévisualiser et personnaliser une face.
+2. Choisissez le format de la feuille **A4 Portrait** ou **A4 Paysage**, puis le nombre d'exemplaires.
+3. Cliquez sur **Recto-verso A4 / PDF**. La fenêtre propose **deux pages**, recto puis verso. Imprimez en duplex, **retournement sur les bords longs**, échelle 100 %, sans ajustement.
+4. Si nécessaire, choisissez **Enregistrer au format PDF** dans le dialogue d'impression. Testez avec une feuille ordinaire avant d'imprimer sur carte ou papier épais.
+
+**Important :** selon l'imprimante et ses marges, un décalage de quelques millimètres peut se produire. Vérifiez les deux faces et les repères avant découpe.
 
 ## Hébergement gratuit avec GitHub Pages
 
