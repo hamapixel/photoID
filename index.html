@@ -245,60 +245,127 @@ function drawWrapped(ctx,raw,x,y,maxWidth,fontSize,lineHeight,color,maxLines=3){
  if(line)lines.push(line);
  lines.slice(0,maxLines).forEach((line,i)=>letter(ctx,line,x,y+i*lineHeight,fontSize,color,700,'center',maxWidth));
 }
-function renderBadge(dpi=170,side=S.badgeSide){const horizontal=S.badgeOrient==='landscape',w=horizontal?86:54,h=horizontal?54:86,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),W=cv.width,H=cv.height,accent=S.badgeAccent,info=badgeInfo();
- solid(c,'#ffffff',W,H);
- if(side==='back'){
-   solid(c,'#fbfcff',W,H);
-   const band=horizontal?H*.37:H*.31;
-   c.fillStyle=accent;c.fillRect(0,0,W,band);
-   c.fillStyle='#ffffff15';c.beginPath();c.arc(W*.9,0,W*.32,0,Math.PI*2);c.fill();
-   if(S.badgeLogo)imageContain(c,S.badgeLogo,horizontal?W*.08:W*.3,H*.045,horizontal?W*.15:W*.4,horizontal?H*.23:H*.13);
-   else letter(c,(info.company||'E').slice(0,1),horizontal?W*.15:W*.5,H*.18,H*.13,'#ffffff',900,'center');
-   letter(c,info.company||'ENTREPRISE',horizontal?W*.56:W*.5,horizontal?H*.18:H*.255,horizontal?H*.105:H*.056,'#ffffff',850,'center',horizontal?W*.66:W*.9);
-   const cx=W*.5;
-   letter(c,'CARTE PROFESSIONNELLE',cx,horizontal?H*.49:H*.395,horizontal?H*.061:H*.041,accent,850,'center',W*.88);
-   letter(c,'PROPRIÉTÉ DE L’ENTREPRISE',cx,horizontal?H*.575:H*.445,horizontal?H*.034:H*.029,'#7b889d',800,'center',W*.88);
-   drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',cx,horizontal?H*.665:H*.53,W*.82,horizontal?H*.051:H*.042,horizontal?H*.066:H*.061,'#394b66',3);
-   c.fillStyle='#dfe5f0';c.fillRect(W*.10,horizontal?H*.825:H*.765,W*.8,1);
-   if(info.phone)letter(c,info.phone,cx,horizontal?H*.9:H*.815,horizontal?H*.062:H*.043,accent,750,'center',W*.84);
-   letter(c,'IDENTIFICATION INTERNE',cx,horizontal?H*.967:H*.943,horizontal?H*.03:H*.029,'#77869f',670,'center',W*.9);
-   return {cv,w,h};
+function badgeText(ctx,content,x,y,fontSize,color,weight='700',align='left',maxWidth,smallest){
+ // Keep the original font proportions: fit width by adjusting type size,
+ // rather than stretching text horizontally in the export.
+ let fs=fontSize;
+ ctx.textAlign=align;ctx.textBaseline='alphabetic';ctx.fillStyle=color;
+ const raw=String(content||'').trim();
+ const min=smallest||fontSize*.76;
+ for(let n=0;n<28;n++){
+   ctx.font=String(weight)+' '+fs+'px system-ui, "Segoe UI", Inter, Arial, sans-serif';
+   if(!maxWidth || ctx.measureText(raw).width<=maxWidth || fs<=min)break;
+   fs=Math.max(min,fs*.965);
  }
- if(horizontal){
-   const header=H*.26;solid(c,accent,W,header);c.fillStyle='#ffffff11';c.beginPath();c.arc(W*.91,H*.0,H*.4,0,Math.PI*2);c.fill();c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.75,H*.25,H*.25,0,Math.PI*2);c.fill();
-   if(S.badgeLogo){imageContain(c,S.badgeLogo,W*.065,H*.045,W*.115,H*.16)}else{fillRound(c,W*.06,H*.06,H*.08,H*.13,8,'#ffffff27');letter(c,'N',W*.10,H*.147,H*.09,'#fff',900,'center')}
-   letter(c,info.company||'VOTRE ENTREPRISE',W*.2,H*.14,H*.065,'#ffffff',840,'left',W*.73);letter(c,'CARTE PROFESSIONNELLE',W*.2,H*.205,H*.027,'#e7eafb',700);
-   const px=W*.051,py=H*.34,pw=W*.241,ph=H*.535;
-   fillRound(c,px-4,py-4,pw+8,ph+8,Math.max(7,W*.022),'#e7ecf6');
-   c.save();c.beginPath();c.roundRect(px,py,pw,ph,Math.max(5,W*.016));c.clip();
-   if(S.badgePhoto)imageCover(c,S.badgePhoto,px,py,pw,ph);
-   else{c.fillStyle='#e3e9f4';c.fillRect(px,py,pw,ph);letter(c,'PHOTO',px+pw/2,py+ph/2,H*.052,'#9ba7bd',800,'center')}
-   c.restore();
-   const x=W*.327,textW=W*.419,qrX=W*.791,qrSide=W*.176;
-   letter(c,info.name||'NOM COMPLET',x,H*.44,H*.083,'#1c2c4c',870,'left',textW);
-   letter(c,info.role||'Fonction',x,H*.535,H*.055,accent,700,'left',textW);
-   c.fillStyle='#dfe5f2';c.fillRect(x,H*.596,textW,2);
-   letter(c,'MATRICULE',x,H*.68,H*.034,'#8691a6',800);
-   letter(c,info.id||'À GÉNÉRER',x,H*.76,H*.051,'#30405e',750,'left',textW);
-   letter(c,'VALIDITÉ : '+info.expiry,x,H*.85,H*.034,'#6e7d96',600,'left',textW);
-   if(info.phone)letter(c,info.phone,x,H*.932,H*.032,'#75839b',500,'left',textW);
-   c.fillStyle='#dfe5f2';c.fillRect(W*.769,H*.34,2,H*.58);
-   drawMatriculeQR(c,info.id,qrX,H*.44,qrSide,accent);
-   letter(c,'SCAN',qrX+qrSide/2,H*.91,H*.043,accent,850,'center',qrSide);
-   c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
+ ctx.fillText(raw,x,y,maxWidth||undefined);
+ return fs;
+}
+function badgeRoundPortrait(ctx,img,cx,cy,diameter,accent){
+ const rad=diameter/2;
+ ctx.save();
+ ctx.beginPath();ctx.arc(cx,cy,rad+diameter*.055,0,Math.PI*2);
+ ctx.fillStyle='#fff';ctx.fill();
+ ctx.strokeStyle='#e1e8f1';ctx.lineWidth=Math.max(2,diameter*.026);ctx.stroke();
+ ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);ctx.clip();
+ ctx.fillStyle='#e9eff8';ctx.fillRect(cx-rad,cy-rad,diameter,diameter);
+ if(img){
+   imageCover(ctx,img,cx-rad,cy-rad,diameter,diameter);
  }else{
-   solid(c,accent,W,H*.32);c.fillStyle='#ffffff0d';c.beginPath();c.arc(W*.7,H*.15,W*.55,0,Math.PI*2);c.fill();
-   if(S.badgeLogo)imageContain(c,S.badgeLogo,W*.30,H*.045,W*.4,H*.1);else letter(c,(info.company||'E')[0],W*.5,H*.12,H*.11,'#fff',900,'center');letter(c,info.company||'ENTREPRISE',W*.5,H*.205,H*.053,'#fff',830,'center',W*.9);
-   const px=W*.24,py=H*.254,pw=W*.52,ph=H*.32;fillRound(c,px-5,py-5,pw+10,ph+10,10,'#ffffff');c.save();c.beginPath();c.roundRect(px,py,pw,ph,6);c.clip();if(S.badgePhoto)imageCover(c,S.badgePhoto,px,py,pw,ph);else{c.fillStyle='#e7ecf6';c.fillRect(px,py,pw,ph);letter(c,'PHOTO',W*.5,py+ph*.52,H*.045,'#b0bacf',700,'center')}c.restore();
-   letter(c,info.name||'NOM COMPLET',W*.5,H*.654,H*.066,'#1f2d49',880,'center',W*.91);letter(c,info.role||'Fonction',W*.5,H*.703,H*.043,accent,700,'center',W*.91);c.fillStyle='#e7ebf4';c.fillRect(W*.14,H*.735,W*.72,2);
-   const colX=W*.08,tw=W*.53,qrSide=W*.28,qrX=W*.66;
-   letter(c,'MATRICULE',colX,H*.786,H*.027,'#8190a5',750,'left',tw);
-   letter(c,info.id||'À GÉNÉRER',colX,H*.832,H*.037,'#36445f',750,'left',tw);
-   letter(c,'VALIDITÉ '+info.expiry,colX,H*.889,H*.029,'#7f8da5',620,'left',tw);
-   if(info.phone)letter(c,info.phone,colX,H*.94,H*.026,'#7f8da5',620,'left',tw);
-   drawMatriculeQR(c,info.id,qrX,H*.767,qrSide,accent);
-   c.fillStyle=accent;c.fillRect(0,H*.971,W,H*.029);
- }return {cv,w,h}}
+   ctx.beginPath();ctx.arc(cx,cy-rad*.17,rad*.27,0,Math.PI*2);
+   ctx.fillStyle='#bccadd';ctx.fill();
+   ctx.beginPath();ctx.ellipse(cx,cy+rad*.73,rad*.67,rad*.51,0,Math.PI,Math.PI*2);
+   ctx.fill();
+ }
+ ctx.restore();
+ // Light ring framing the round portrait.
+ ctx.save();ctx.beginPath();ctx.arc(cx,cy,rad,0,Math.PI*2);
+ ctx.strokeStyle=accent;ctx.lineWidth=Math.max(1,diameter*.014);ctx.stroke();ctx.restore();
+}
+function renderBadge(dpi=170,side=S.badgeSide){
+ const horizontal=S.badgeOrient==='landscape';
+ const w=horizontal?86:54,h=horizontal?54:86,p=dpi/25.4;
+ const cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p);
+ const W=cv.width,H=cv.height,accent=S.badgeAccent,info=badgeInfo();
+ const company=info.company||'VOTRE ENTREPRISE',person=info.name||'NOM COMPLET';
+ const matrix=info.id||'À GÉNÉRER',job=info.role||'FONCTION';
+ const idLabel='MATRICULE';
+ const logo=(x,y,lw,lh)=>{
+   if(S.badgeLogo)imageContain(c,S.badgeLogo,x,y,lw,lh);
+   else{
+     fillRound(c,x+lw*.15,y+lh*.05,lw*.7,lh*.88,Math.max(4,lw*.08),'#ffffff20');
+     badgeText(c,company.slice(0,1).toUpperCase(),x+lw/2,y+lh*.77,lh*.65,'#fff','800','center',lw*.78);
+   }
+ };
+ const line=(x,y,width,col='#dfe5ef')=>{c.fillStyle=col;c.fillRect(x,y,width,Math.max(1,H*.003))};
+ solid(c,'#fff',W,H);
+ if(horizontal){
+   // Landscape CR80 badge, 86 × 54 mm.
+   c.fillStyle=accent;c.fillRect(0,0,W,H*.247);
+   c.fillStyle='#ffffff13';c.beginPath();c.arc(W*.91,-H*.04,H*.42,0,Math.PI*2);c.fill();
+   logo(W*.047,H*.044,W*.113,H*.162);
+   badgeText(c,company,W*.188,H*.142,H*.088,'#fff','850','left',W*.76,H*.066);
+   badgeText(c,'CARTE PROFESSIONNELLE',W*.188,H*.211,H*.042,'#e6eef9','750','left',W*.72);
+   if(side==='front'){
+     badgeRoundPortrait(c,S.badgePhoto,W*.163,H*.606,H*.438,accent);
+     const x=W*.33,tw=W*.43;
+     badgeText(c,person,x,H*.432,H*.112,'#172849','850','left',tw,H*.078);
+     badgeText(c,job,x,H*.549,H*.063,accent,'740','left',tw,H*.05);
+     line(x,H*.604,tw);
+     badgeText(c,idLabel,x,H*.693,H*.046,'#697994','850','left',tw);
+     badgeText(c,matrix,x,H*.786,H*.071,'#182b4c','850','left',tw,H*.055);
+     badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.874,H*.049,'#445571','720','left',tw,H*.04);
+     if(info.phone)badgeText(c,info.phone,x,H*.948,H*.043,'#566781','660','left',tw,H*.035);
+     line(W*.776,H*.356,1.3,'#d1dae7');
+     const qs=W*.171,qx=W*.806;
+     drawMatriculeQR(c,info.id,qx,H*.46,qs,accent);
+     badgeText(c,'SCAN',qx+qs/2,H*.906,H*.045,accent,'850','center',qs);
+   }else{
+     badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.387,H*.074,accent,'850','center',W*.86);
+     badgeText(c,person,W*.5,H*.510,H*.074,'#1d2b48','800','center',W*.89,H*.06);
+     drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',
+       W*.5,H*.620,W*.82,H*.052,H*.068,'#43536b',2);
+     if(info.phone)badgeText(c,info.phone,W*.5,H*.738,H*.049,'#52627b','700','center',W*.72);
+     c.fillStyle='#edf3f5';c.fillRect(0,H*.78,W,H*.195);
+     c.fillStyle=accent;c.fillRect(0,H*.972,W,H*.028);
+     badgeText(c,idLabel,W*.073,H*.846,H*.048,'#64758e','830','left',W*.69);
+     badgeText(c,matrix,W*.073,H*.938,H*.079,'#1a2c48','850','left',W*.69,H*.06);
+     drawMatriculeQR(c,info.id,W*.805,H*.711,W*.168,accent);
+   }
+   if(side==='front'){c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027)}
+ }else{
+   // Portrait CR80 badge, 54 × 86 mm.
+   c.fillStyle=accent;c.fillRect(0,0,W,H*.264);
+   c.fillStyle='#ffffff12';c.beginPath();c.arc(W*.82,H*.055,W*.51,0,Math.PI*2);c.fill();
+   logo(W*.366,H*.033,W*.268,H*.11);
+   badgeText(c,company,W*.5,H*.204,H*.057,'#fff','850','center',W*.9,H*.047);
+   badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.249,H*.032,'#edf6f6','750','center',W*.87);
+   if(side==='front'){
+     badgeRoundPortrait(c,S.badgePhoto,W*.5,H*.394,W*.438,accent);
+     badgeText(c,person,W*.5,H*.620,H*.073,'#1c2d49','850','center',W*.91,H*.057);
+     badgeText(c,job,W*.5,H*.684,H*.048,accent,'750','center',W*.91,H*.04);
+     line(W*.075,H*.721,W*.85);
+     const x=W*.073,tw=W*.555;
+     badgeText(c,idLabel,x,H*.788,H*.043,'#687991','850','left',tw);
+     badgeText(c,matrix,x,H*.844,H*.049,'#1b2d4d','850','left',tw,H*.037);
+     badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.903,H*.038,'#445571','690','left',tw);
+     if(info.phone)badgeText(c,info.phone,x,H*.952,H*.033,'#52637d','650','left',tw);
+     drawMatriculeQR(c,info.id,W*.658,H*.768,W*.275,accent);
+   }else{
+     badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.348,H*.056,accent,'850','center',W*.91,H*.047);
+     badgeText(c,person,W*.5,H*.432,H*.068,'#192c49','850','center',W*.91,H*.052);
+     drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',
+       W*.5,H*.525,W*.81,H*.043,H*.053,'#42526b',3);
+     if(info.phone)badgeText(c,info.phone,W*.5,H*.696,H*.043,'#52647d','730','center',W*.86);
+     c.fillStyle='#eef4f6';c.fillRect(0,H*.741,W,H*.232);
+     badgeText(c,idLabel,W*.07,H*.800,H*.039,'#687991','850','left',W*.55);
+     badgeText(c,matrix,W*.07,H*.867,H*.052,'#1b2d4d','850','left',W*.54,H*.039);
+     badgeText(c,'VALIDITÉ : '+info.expiry,W*.07,H*.937,H*.036,'#536780','710','left',W*.56);
+     drawMatriculeQR(c,info.id,W*.662,H*.760,W*.275,accent);
+   }
+   c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
+ }
+ return {cv,w,h};
+}
 function drawBadge(){const {cv,w,h}=renderBadge(170);const code=$('employeeId').value.trim();$('badgeQrStatus').textContent=code?'QR code lié au matricule : '+code+' — scanner affiche ce matricule. Ce n’est pas une preuve de validité.':'Saisissez ou générez un matricule pour créer le QR code.';const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
 function bizInfo(){return {name:$('bizName').value,role:$('bizRole').value,company:$('bizCompany').value,phone:$('bizPhone').value,email:$('bizEmail').value,web:$('bizWebsite').value,address:$('bizAddress').value}}
 function renderBiz(dpi=160,side=S.bizSide){
