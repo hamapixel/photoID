@@ -110,7 +110,7 @@
       <div class="field"><label class="label" for="badgePhone">TÉLÉPHONE DE L'ENTREPRISE</label><input id="badgePhone" class="input" placeholder="+223 00 00 00 00" maxlength="35"></div>
       <div class="two"><div class="field"><label class="label">PHOTO EMPLOYÉ</label><label class="file-drop" style="min-height:62px;padding:11px"><span class="upload-icon" style="width:32px;height:32px;font-size:15px">↥</span><div><strong>Importer</strong><span>ou photo du module 1</span></div><input id="badgePhotoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label></div><div class="field"><label class="label">LOGO ENTREPRISE</label><label class="file-drop" style="min-height:62px;padding:11px"><span class="upload-icon" style="width:32px;height:32px;font-size:15px">↥</span><div><strong>Importer</strong><span>PNG recommandé</span></div><input id="badgeLogoUpload" type="file" accept="image/png,image/jpeg,image/webp"></label></div></div>
       <div class="rule"></div><div class="section"><label class="label">ORIENTATION</label><div class="design-choice" style="grid-template-columns:1fr 1fr" id="badgeOrient"><button class="active" data-orient="landscape"><span class="small-icon">▰</span>Horizontal 86 × 54</button><button data-orient="portrait"><span class="small-icon">▥</span>Vertical 54 × 86</button></div></div>
-      <div class="section"><div class="status ok" id="badgeQrStatus" role="status">Le QR code encode le matricule affiché. Le scan renvoie ce code, sans validation automatique d’identité.</div></div><div class="section"><label class="label">FACE DU BADGE — CLIQUER POUR CHANGER</label><div class="face-tabs" id="badgeSides" aria-label="Choisir la face du badge"><button type="button" class="active" data-badge-side="front" aria-pressed="true">Recto · Employé</button><button type="button" data-badge-side="back" aria-pressed="false">Verso · Entreprise</button></div><p class="frontback-hint">Chaque face est personnalisable. L'impression crée deux pages A4 assorties.</p></div>
+      <div class="section"><div class="status ok" id="badgeQrStatus" role="status">Le QR ouvre une fiche professionnelle avec le nom, la fonction, l’entreprise, le matricule et la validité.</div><div class="actionbar"><button type="button" class="button secondary" id="badgeOpenIdentity">↗ Tester la fiche QR</button><button type="button" class="button white" id="badgeCopyIdentity">⧉ Copier le lien</button></div><p class="mini" style="margin-top:10px">Une personne qui scanne ce QR peut consulter les informations du badge. La fiche est publique et ne certifie ni l'identité ni le statut de l'employé. La photo n'est pas publiée.</p></div><div class="section"><label class="label">FACE DU BADGE — CLIQUER POUR CHANGER</label><div class="face-tabs" id="badgeSides" aria-label="Choisir la face du badge"><button type="button" class="active" data-badge-side="front" aria-pressed="true">Recto · Employé</button><button type="button" data-badge-side="back" aria-pressed="false">Verso · Entreprise</button></div><p class="frontback-hint">Chaque face est personnalisable. L'impression crée deux pages A4 assorties.</p></div>
       <div class="section"><label class="label" for="badgeBackMessage">MESSAGE AU VERSO</label><input class="input" id="badgeBackMessage" value="Si trouvé, merci de retourner ce badge à l’entreprise." maxlength="115"></div>
       <div class="section"><label class="label">IMPRESSION DES BADGES</label><div class="print-options"><div><label class="label" for="badgePaperOrient">FEUILLE A4</label><select class="select" id="badgePaperOrient"><option value="portrait">Portrait</option><option value="landscape">Paysage</option></select></div><div><label class="label" for="badgeCopies">EXEMPLAIRES</label><select class="select" id="badgeCopies"><option value="auto">Max. sur A4</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="6">6</option><option value="8">8</option><option value="9">9</option></select></div></div><p class="mini">Impression recto-verso en taille réelle. Testez d'abord une feuille pour vérifier l'alignement et le retournement.</p></div>
       <div class="section"><label class="label">COULEUR PRINCIPALE</label><div class="swatches" id="badgeSwatches"><button title="Bleu nuit" class="swatch active" data-accent="#2a416f" style="background:#2a416f"></button><button title="Indigo" class="swatch" data-accent="#525ddb" style="background:#525ddb"></button><button title="Vert" class="swatch" data-accent="#157a65" style="background:#157a65"></button><button title="Bordeaux" class="swatch" data-accent="#823b5b" style="background:#823b5b"></button><button title="Noir" class="swatch" data-accent="#222b38" style="background:#222b38"></button></div></div>
@@ -176,7 +176,9 @@ function initUI(){
  ['brightness','contrast'].forEach(id=>$(id).addEventListener('input',e=>{S[id]=Number(e.target.value);drawPhoto()}));
  $('resetPhoto').addEventListener('click',()=>{S.panX=0;S.panY=0;S.photoZoom=1;$('photoZoom').value=100;$('zoomLabel').textContent='100 %';drawPhoto();toast('Cadrage recentré.')});
  setupGroup('badgeOrient','orient',v=>{S.badgeOrient=v;drawBadge()});setupGroup('badgeSides','badgeSide',v=>{S.badgeSide=v;drawBadge()});setupGroup('badgeSwatches','accent',v=>{S.badgeAccent=v;drawBadge()});setupGroup('bizTemplates','template',v=>{S.bizTemplate=v;S.bizAccent=({prestige:'#273d71',corporate:'#315bb0',minimal:'#46566d',luxe:'#b79557'})[v]||'#273d71';updateSelect('bizSwatches','accent',S.bizAccent);drawBiz()});setupGroup('bizSwatches','accent',v=>{S.bizAccent=v;drawBiz()});setupGroup('bizSides','side',v=>{S.bizSide=v;drawBiz()});
- ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone','badgeBackMessage'].forEach(id=>$(id).addEventListener('input',drawBadge));$('generateEmployeeId').addEventListener('click',()=>{try{$('employeeId').value=freshMatricule();drawBadge();toast('Nouveau matricule et QR code générés. Sauvegardez votre carte.')}catch(e){toast(e.message)}});$('badgeFlip').addEventListener('click',()=>{S.badgeSide=S.badgeSide==='front'?'back':'front';updateSelect('badgeSides','badgeSide',S.badgeSide);drawBadge()});$('bizFlip').addEventListener('click',()=>{S.bizSide=S.bizSide==='front'?'back':'front';updateSelect('bizSides','side',S.bizSide);drawBiz()});
+ ['employee','role','badgeCompany','employeeId','badgeExpiry','badgePhone','badgeBackMessage'].forEach(id=>$(id).addEventListener('input',drawBadge));
+ $('badgeOpenIdentity').addEventListener('click',()=>{try{const url=badgeIdentityLink();window.open(url,'_blank','noopener,noreferrer')}catch(e){toast(e.message)}});
+ $('badgeCopyIdentity').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(badgeIdentityLink());toast('Lien de la fiche copié.')}catch(e){toast('Impossible de copier le lien : vérifiez les informations ou les autorisations du navigateur.')}});$('generateEmployeeId').addEventListener('click',()=>{try{$('employeeId').value=freshMatricule();drawBadge();toast('Nouveau matricule et QR code générés. Sauvegardez votre carte.')}catch(e){toast(e.message)}});$('badgeFlip').addEventListener('click',()=>{S.badgeSide=S.badgeSide==='front'?'back':'front';updateSelect('badgeSides','badgeSide',S.badgeSide);drawBadge()});$('bizFlip').addEventListener('click',()=>{S.bizSide=S.bizSide==='front'?'back':'front';updateSelect('bizSides','side',S.bizSide);drawBiz()});
  ['bizName','bizRole','bizCompany','bizPhone','bizEmail','bizWebsite','bizAddress'].forEach(id=>$(id).addEventListener('input',drawBiz));document.querySelectorAll('[data-preview-side]').forEach(btn=>btn.addEventListener('click',()=>{S.bizSide=btn.dataset.previewSide;updateSelect('bizSides','side',S.bizSide);drawBiz()}));
  $('photoPng').onclick=()=>exportImage('photos');$('badgePng').onclick=()=>exportImage('badges');$('bizPng').onclick=()=>exportImage('cartes');
  $('photoPrint').onclick=()=>printImage('photos');$('badgePrint').onclick=()=>printImage('badges');$('bizPrint').onclick=()=>printImage('cartes');
@@ -357,9 +359,9 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,matrix,x,H*.786,H*.071,'#182b4c','850','left',tw,H*.055);
      badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.874,H*.049,'#445571','720','left',tw,H*.04);
      if(info.phone)badgeText(c,info.phone,x,H*.948,H*.043,'#566781','660','left',tw,H*.035);
-     c.fillStyle='#d1dae7';c.fillRect(W*.782,H*.352,Math.max(1,W*.002),H*.56);
-     const qs=W*.171,qx=W*.806;
-     drawIdentityQR(c,info,qx,H*.46,qs,accent);
+     c.fillStyle='#d1dae7';c.fillRect(W*.765,H*.352,Math.max(1,W*.002),H*.56);
+     const qs=W*.208,qx=W*.78;
+     drawIdentityQR(c,info,qx,H*.425,qs,accent);
      badgeText(c,'SCAN',qx+qs/2,H*.906,H*.045,accent,'850','center',qs);
    }else{
      c.fillStyle='#edf3f5';c.fillRect(0,H*.826,W,H*.146);
@@ -373,7 +375,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,idLabel,W*.073,H*.884,H*.048,'#64758e','830','left',W*.69);
      badgeText(c,matrix,W*.073,H*.948,H*.076,'#1a2c48','850','left',W*.69,H*.059);
      c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
-     drawIdentityQR(c,info,W*.805,H*.711,W*.168,accent);
+     drawIdentityQR(c,info,W*.78,H*.625,W*.208,accent);
    }
    if(side==='front'){c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027)}
  }else{
@@ -393,7 +395,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,matrix,x,H*.844,H*.049,'#1b2d4d','850','left',tw,H*.037);
      badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.903,H*.038,'#445571','690','left',tw);
      if(info.phone)badgeText(c,info.phone,x,H*.952,H*.033,'#52637d','650','left',tw);
-     drawIdentityQR(c,info,W*.658,H*.768,W*.275,accent);
+     drawIdentityQR(c,info,W*.652,H*.755,W*.31,accent);
    }else{
      badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.342,H*.056,accent,'850','center',W*.91,H*.047);
      badgeText(c,person,W*.5,H*.419,H*.068,'#192c49','850','center',W*.91,H*.052);
@@ -406,13 +408,18 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,idLabel,W*.07,H*.827,H*.038,'#687991','850','left',W*.55);
      badgeText(c,matrix,W*.07,H*.883,H*.052,'#1b2d4d','850','left',W*.54,H*.039);
      badgeText(c,'VALIDITÉ : '+info.expiry,W*.07,H*.945,H*.036,'#536780','710','left',W*.56);
-     drawIdentityQR(c,info,W*.662,H*.760,W*.275,accent);
+     drawIdentityQR(c,info,W*.652,H*.755,W*.31,accent);
    }
    c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
  }
  return {cv,w,h};
 }
-function drawBadge(){const {cv,w,h}=renderBadge(170);const code=$('employeeId').value.trim();$('badgeQrStatus').textContent=code?'QR code lié au matricule : '+code+' — scanner affiche ce matricule. Ce n’est pas une preuve de validité.':'Saisissez ou générez un matricule pour créer le QR code.';const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
+function drawBadge(){const {cv,w,h}=renderBadge(170);const code=$('employeeId').value.trim();
+ try{
+   const size=qrForIdentity(badgeInfo()).getModuleCount();
+   $('badgeQrStatus').textContent='QR du matricule '+code+' : ouvre la fiche professionnelle avec le nom, la fonction, l’entreprise et la validité. Ce n’est pas une authentification.'+(size>57?' QR très dense : testez le scan sur une carte réellement imprimée.':'');
+   $('badgeQrStatus').className='status '+(size>57?'warn':'ok');
+ }catch(e){$('badgeQrStatus').textContent=e.message;$('badgeQrStatus').className='status warn';}const target=$('badgeCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('badgeMeta').textContent=`${S.badgeSide==='front'?'Recto':'Verso'} · ${S.badgeOrient==='landscape'?'Horizontal':'Vertical'} · ${w} × ${h} mm`;$('badgeFlip').textContent=S.badgeSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('badgeSides','badgeSide',S.badgeSide)}
 function bizInfo(){return {name:$('bizName').value,role:$('bizRole').value,company:$('bizCompany').value,phone:$('bizPhone').value,email:$('bizEmail').value,web:$('bizWebsite').value,address:$('bizAddress').value}}
 function renderBiz(dpi=160,side=S.bizSide){
  const w=90,h=50,p=dpi/25.4,cv=document.createElement('canvas'),c=canvasSize(cv,w*p,h*p),
@@ -540,7 +547,7 @@ function drawBiz(){
   btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
  });
 }
-function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges'){if(!$('employeeId').value.trim())throw new Error('Générez ou saisissez un matricule avant export.');return renderBadge(dpi);}return renderBiz(dpi)}
+function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges'){qrForIdentity(badgeInfo());return renderBadge(dpi);}return renderBiz(dpi)}
 function createSheet(art,dpi=300,orientation='portrait',copies='auto',reverse=false){
  const pw=orientation==='landscape'?297:210,ph=orientation==='landscape'?210:297,margin=7,gap=4,cv=document.createElement('canvas'),p=dpi/25.4,c=canvasSize(cv,pw*p,ph*p);
  solid(c,'#ffffff',cv.width,cv.height);
@@ -567,7 +574,7 @@ function printImage(which){
   }else{
    const orient=$(which==='badges'?'badgePaperOrient':'bizPaperOrient').value;
    const copies=$(which==='badges'?'badgeCopies':'bizCopies').value;
-   if(which==='badges'&&!$('employeeId').value.trim())throw new Error('Générez ou saisissez un matricule avant impression.');const make=(side)=>which==='badges'?renderBadge(300,side):renderBiz(300,side);
+   if(which==='badges')qrForIdentity(badgeInfo());const make=(side)=>which==='badges'?renderBadge(300,side):renderBiz(300,side);
    pages=[createSheet(make('front'),300,orient,copies,false),createSheet(make('back'),300,orient,copies,true)];
   }
   const win=window.open('','_blank');if(!win)throw new Error('Autorisez les fenêtres d’impression pour créer le PDF.');
