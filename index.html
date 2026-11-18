@@ -228,10 +228,45 @@ function renderBiz(dpi=160,side=S.bizSide){const w=90,h=50,p=dpi/25.4,cv=documen
  return {cv,w,h}}
 function drawBiz(){const {cv}=renderBiz(160);const target=$('bizCanvas');target.width=cv.width;target.height=cv.height;target.getContext('2d').drawImage(cv,0,0);$('bizMeta').textContent=`${S.bizTemplate==='executive'?'Executive':S.bizTemplate==='minimal'?'Minimal':'Signature'} · ${S.bizSide==='front'?'Recto':'Verso'} · 90 × 50 mm`;$('bizFlip').textContent=S.bizSide==='front'?'↻ Voir le verso':'↻ Voir le recto';updateSelect('bizSides','side',S.bizSide)}
 function getArt(which,dpi=300){if(which==='photos'){if(!S.photo)throw new Error('Importez une photo avant l’export.');const v=renderPhoto(dpi);if(!v.l.ok)throw new Error('Le nombre de photos dépasse la capacité du papier.');return v}if(which==='badges')return renderBadge(dpi);return renderBiz(dpi)}
-function createSheet(art,dpi=300){const pw=210,ph=297,margin=7,gap=4,cv=document.createElement('canvas'),p=dpi/25.4,c=canvasSize(cv,pw*p,ph*p);solid(c,'#ffffff',cv.width,cv.height);const cols=Math.floor((pw-2*margin+gap)/(art.w+gap)),rows=Math.floor((ph-2*margin+gap)/(art.h+gap));const ox=(pw-cols*art.w-(cols-1)*gap)/2,oy=(ph-rows*art.h-(rows-1)*gap)/2;for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const ax=(ox+x*(art.w+gap))*p,ay=(oy+y*(art.h+gap))*p;c.drawImage(art.cv,ax,ay,art.w*p,art.h*p);c.strokeStyle='#c9ced6';c.lineWidth=1;c.strokeRect(ax,ay,art.w*p,art.h*p)}return {cv,w:pw,h:ph}}
+function createSheet(art,dpi=300,orientation='portrait',copies='auto',reverse=false){
+ const pw=orientation==='landscape'?297:210,ph=orientation==='landscape'?210:297,margin=7,gap=4,cv=document.createElement('canvas'),p=dpi/25.4,c=canvasSize(cv,pw*p,ph*p);
+ solid(c,'#ffffff',cv.width,cv.height);
+ const cols=Math.floor((pw-2*margin+gap)/(art.w+gap)),rows=Math.floor((ph-2*margin+gap)/(art.h+gap)),capacity=cols*rows;
+ if(capacity<1)throw new Error('Ce format ne tient pas sur la feuille A4 choisie.');
+ const count=copies==='auto'?capacity:Number(copies);
+ if(!Number.isInteger(count)||count<1||count>capacity)throw new Error('Quantité trop élevée : '+capacity+' exemplaires maximum sur cette feuille.');
+ const ox=(pw-cols*art.w-(cols-1)*gap)/2,oy=(ph-rows*art.h-(rows-1)*gap)/2;
+ for(let i=0;i<count;i++){
+   const column=i%cols,row=Math.floor(i/cols),x=reverse&&orientation==='portrait'?cols-1-column:column,y=reverse&&orientation==='landscape'?rows-1-row:row;
+   const ax=(ox+x*(art.w+gap))*p,ay=(oy+y*(art.h+gap))*p;
+   c.drawImage(art.cv,ax,ay,art.w*p,art.h*p);
+   c.strokeStyle='#b6bfcd';c.lineWidth=1;c.strokeRect(ax,ay,art.w*p,art.h*p);
+ }
+ return {cv,w:pw,h:ph,count,capacity};
+}
 function downloadCanvas(cv,name){cv.toBlob(blob=>{if(!blob){toast('Échec de la création du fichier PNG.');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000)},'image/png')}
 function exportImage(which){try{const art=getArt(which),filename=which==='photos'?'Planche_Photos_Identite.png':which==='badges'?'Badge_Entreprise.png':`Carte_Visite_${S.bizSide==='front'?'Recto':'Verso'}.png`;downloadCanvas(art.cv,filename);toast('Fichier PNG en cours de téléchargement.')}catch(e){toast(e.message)}}
-function printImage(which){try{const art=getArt(which),page=which==='photos'?art:createSheet(art);const url=page.cv.toDataURL('image/png'),win=window.open('','_blank');if(!win)throw new Error('Autorisez l’ouverture de la fenêtre d’impression.');win.document.open();win.document.write(`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Impression PhotoID Studio</title><style>@page{size:${page.w}mm ${page.h}mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;background:white}img{display:block;width:${page.w}mm;height:${page.h}mm;max-width:none}@media screen{body{background:#e7e7e7;padding:12px}img{box-shadow:0 5px 25px #0003;margin:auto}}</style></head><body><img id="print" src="${url}" onload="setTimeout(function(){window.print()},350)"><p style="font:12px Arial;color:#555;text-align:center" class="screen">Dans la fenêtre d'impression, choisissez l'échelle 100 % et désactivez les marges et en-têtes.</p></body></html>`);win.document.close();toast('Fenêtre d’impression ouverte : vérifiez le format et l’échelle 100 %.')}catch(e){toast(e.message)}}
+function printImage(which){
+ try{
+  let pages;
+  if(which==='photos'){
+   pages=[getArt('photos')];
+  }else{
+   const orient=$(which==='badges'?'badgePaperOrient':'bizPaperOrient').value;
+   const copies=$(which==='badges'?'badgeCopies':'bizCopies').value;
+   const make=(side)=>which==='badges'?renderBadge(300,side):renderBiz(300,side);
+   pages=[createSheet(make('front'),300,orient,copies,false),createSheet(make('back'),300,orient,copies,true)];
+  }
+  const win=window.open('','_blank');if(!win)throw new Error('Autorisez les fenêtres d’impression pour créer le PDF.');
+  const w=pages[0].w,h=pages[0].h;
+  const imgs=pages.map((page,i)=>'<section class="sheet"><img alt="Page '+(i+1)+'" src="'+page.cv.toDataURL('image/png')+'"></section>').join('');
+  const help=which==='photos'?'Imprimez à taille réelle (100 %), sans ajustement.':'Imprimez les deux pages en recto-verso et à l’échelle 100 %. Utilisez le retournement sur bords longs. Faites un essai sur une feuille avant découpe.';
+  const html='<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>PhotoID — Impression '+(pages.length===2?'recto-verso':'photos')+'</title><style>@page{size:'+w+'mm '+h+'mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;background:white}.sheet{height:'+h+'mm;width:'+w+'mm;page-break-after:always;break-after:page;overflow:hidden}.sheet:last-of-type{page-break-after:auto;break-after:auto}.sheet img{width:100%;height:100%;display:block}@media screen{body{background:#e8ecf3;padding:20px}.sheet{margin:0 auto 15px;background:white;box-shadow:0 8px 30px #0002}.tip{max-width:700px;margin:0 auto 20px;font:14px Arial}}@media print{.tip{display:none}}</style></head><body><p class="tip">'+help+'</p>'+imgs+'<script>Promise.all(Array.from(document.images).map(i=>i.complete?Promise.resolve():new Promise(resolve=>{i.onload=resolve;i.onerror=resolve}))).then(()=>setTimeout(()=>window.print(),400));<\/script></body></html>';
+  win.document.open();win.document.write(html);win.document.close();
+  toast(pages.length===2?'Deux planches prêtes : recto et verso. Imprimez à 100 %.':'Planche prête à imprimer.');
+ }catch(e){toast(e.message)}
+}
+
 initUI();
 })();
 </script>
