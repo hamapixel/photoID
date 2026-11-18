@@ -17,7 +17,7 @@ Quand GitHub Pages est activé, rendez-vous sur :
 - **QR d'identité professionnelle** : génère un lien ouvrant la fiche du salarié (nom, entreprise, fonction, matricule, validité) et se met à jour quand un champ change. Un bouton permet de créer un nouveau matricule aléatoire.
 - **Design premium optimisé pour la lisibilité** : photo de l'employé découpée en cercle au recto, nom/fonction et matricule mieux contrastés et agrandis, police sans-serif soignée, matricule lisible sur les deux faces, QR de matricule présent sur le recto et le verso, en horizontal comme en vertical.
 - **Logo d’entreprise mis en valeur** : plaque blanche à coins arrondis dans l’en-tête, zone logo agrandie et recentrage des images avec marges transparentes ou blanches (l’image originale n’est pas modifiée).
-- **Crédit BTDIGIT au verso** : « Créé par BTDIGIT » et `hamapixel.github.io/nexora-technologies/` sur les deux orientations de badge. Le pied de page du logiciel renvoie aussi au site [BTDIGIT](https://hamapixel.github.io/nexora-technologies/).
+- **Signature BTDIGIT uniquement dans le footer du logiciel** : les badges n'affichent ni le crédit BTDIGIT ni l'adresse du site ; le texte **BTDIGIT** reste cliquable en pied de page et ouvre [le site officiel BTDIGIT](https://hamapixel.github.io/nexora-technologies/).
 - Cartes de visite : **4 modèles Prestige, Corporate, Minimal et Luxe**, choix avec miniatures cliquables, couleurs personnalisables, logo, recto et verso cliquables, format 90 × 50 mm
 - Impression de badges et cartes de visite en **recto-verso sur deux pages A4**, à l'échelle 100 %, avec choix de feuille portrait/paysage, quantité et positions miroirs pour l'alignement au découpage
 - Interface entièrement en français, adaptée aux PC et aux mobiles
