@@ -143,7 +143,7 @@
     <div><div class="panel preview-panel"><div class="panel-head"><div><h2 class="panel-title">Votre carte de visite</h2><span class="panel-hint" id="bizMeta">Prestige · Recto · 90 × 50 mm</span></div><span class="preview-meta">300 DPI</span></div><div class="canvas-zone landscape"><canvas id="bizCanvas" aria-label="Aperçu de carte de visite"></canvas></div><div class="preview-action"><button type="button" id="bizFlip" class="button secondary">↻ Voir le verso</button></div><div class="business-mini-previews" aria-label="Aperçus cliquables recto-verso"><button type="button" class="business-thumb active" data-preview-side="front" aria-pressed="true"><canvas id="bizThumbFront" aria-hidden="true"></canvas><strong>Recto</strong></button><button type="button" class="business-thumb" data-preview-side="back" aria-pressed="false"><canvas id="bizThumbBack" aria-hidden="true"></canvas><strong>Verso</strong></button></div><p class="note">Format professionnel 90 × 50 mm. Pour l'impression recto-verso, exportez chaque côté et vérifiez l'alignement de votre imprimante.</p></div><div class="statstrip"><div class="statbox"><b>90×50</b><small>Dimensions (mm)</small></div><div class="statbox"><b>2 faces</b><small>Recto et verso</small></div><div class="statbox"><b>A4</b><small>Planche imprimable</small></div></div></div>
   </div>
 </section>
-<div class="footerline">PhotoID Studio Premium · Créé par <a href="https://hamapixel.github.io/nexora-technologies/" target="_blank" rel="noopener noreferrer" style="font-weight:800;text-decoration:underline;text-underline-offset:2px">BTDIGIT</a> · <a href="https://hamapixel.github.io/nexora-technologies/" target="_blank" rel="noopener noreferrer">hamapixel.github.io/nexora-technologies/</a> · Fichiers générés localement</div>
+<div class="footerline">PhotoID Studio Premium · Créé par <a href="https://hamapixel.github.io/nexora-technologies/" target="_blank" rel="noopener noreferrer" style="font-weight:800;text-decoration:underline;text-underline-offset:2px">BTDIGIT</a> · Fichiers générés localement</div>
 </div></main></div>
 <div id="toast" class="toast" role="status"></div>
 <script src="./vendor/qrcode-generator.js"></script>
@@ -370,8 +370,6 @@ function renderBadge(dpi=170,side=S.badgeSide){
      drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',
        W*.5,H*.554,W*.83,H*.049,H*.060,'#43536b',2);
      if(info.phone)badgeText(c,info.phone,W*.5,H*.694,H*.049,'#52627b','700','center',W*.72);
-     badgeText(c,'Créé par BTDIGIT',W*.073,H*.753,H*.050,accent,'850','left',W*.66);
-     badgeText(c,'hamapixel.github.io/nexora-technologies/',W*.073,H*.812,H*.038,'#415673','710','left',W*.685,H*.031);
      badgeText(c,idLabel,W*.073,H*.884,H*.048,'#64758e','830','left',W*.69);
      badgeText(c,matrix,W*.073,H*.948,H*.076,'#1a2c48','850','left',W*.69,H*.059);
      c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
@@ -402,8 +400,6 @@ function renderBadge(dpi=170,side=S.badgeSide){
      drawWrapped(c,$('badgeBackMessage').value||'Si trouvé, merci de retourner ce badge à l’entreprise.',
        W*.5,H*.505,W*.85,H*.041,H*.052,'#42526b',3);
      if(info.phone)badgeText(c,info.phone,W*.5,H*.667,H*.043,'#52647d','730','center',W*.86);
-     badgeText(c,'Créé par BTDIGIT',W*.075,H*.719,H*.040,accent,'850','left',W*.85);
-     badgeText(c,'hamapixel.github.io/nexora-technologies/',W*.075,H*.755,H*.027,'#43546e','730','left',W*.87,H*.023);
      c.fillStyle='#eef4f6';c.fillRect(0,H*.781,W,H*.192);
      badgeText(c,idLabel,W*.07,H*.827,H*.038,'#687991','850','left',W*.55);
      badgeText(c,matrix,W*.07,H*.883,H*.052,'#1b2d4d','850','left',W*.54,H*.039);
