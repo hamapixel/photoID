@@ -207,34 +207,32 @@ function freshMatricule(){
  const token=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('').toUpperCase();
  return 'MTRC-'+year+'-'+token;
 }
-function qrForMatricule(raw){
- const value=String(raw||'').trim();
- if(!value)return null;
- if(typeof qrcode!=='function')throw new Error('La bibliothèque QR locale est manquante : vérifiez vendor/qrcode-generator.js');
- const code=qrcode(0,'M');
- code.addData(value);
- code.make();
- return code;
+// QR -> fiche professionnelle autonome : l'URL contient uniquement les champs du badge.
+const BADGE_IDENTITY_URL='https://hamapixel.github.io/photoID/i.html#d=';
+function badgeIdentityLink(info=badgeInfo()){
+ const name=String(info.name||'').trim(),role=String(info.role||'').trim(),company=String(info.company||'').trim();
+ const id=String(info.id||'').trim(),expiry=String(info.expiry||'').trim();
+ if(!name||!company||!id)throw new Error('Renseignez le nom, l’entreprise et le matricule pour générer le QR.');
+ const bytes=new TextEncoder().encode(JSON.stringify([1,name,role,company,id,expiry]));
+ let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);
+ return BADGE_IDENTITY_URL+btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
-function drawMatriculeQR(ctx,matricule,x,y,size,accent){
- // QR réel noir sur blanc, 4 modules de marge (quiet zone), sans logo ni déformation.
- const qr=qrForMatricule(matricule);
- ctx.save();
- fillRound(ctx,x,y,size,size,Math.max(3,size*.055),'#ffffff');
- ctx.strokeStyle=accent;ctx.lineWidth=Math.max(1,size*.009);
- ctx.strokeRect(x,y,size,size);
- if(qr){
-  const count=qr.getModuleCount(),quiet=4,whole=count+quiet*2,step=size/whole;
-  ctx.fillStyle='#121c2c';
-  for(let row=0;row<count;row++)for(let col=0;col<count;col++){
-    if(qr.isDark(row,col)){
-      // Subpixel positions can blur small modules; use complete filled squares.
-      ctx.fillRect(x+(col+quiet)*step,y+(row+quiet)*step,step+.15,step+.15);
-    }
+function qrForIdentity(info){
+ if(typeof qrcode!=='function')throw new Error('Bibliothèque de QR code introuvable.');
+ const code=qrcode(0,'M');code.addData(badgeIdentityLink(info),'Byte');code.make();return code;
+}
+function drawIdentityQR(ctx,info,x,y,size,accent){
+ ctx.save();fillRound(ctx,x,y,size,size,Math.max(3,size*.05),'#fff');
+ ctx.strokeStyle=accent;ctx.lineWidth=Math.max(1,size*.008);ctx.strokeRect(x,y,size,size);
+ try{
+  const qr=qrForIdentity(info),count=qr.getModuleCount(),quiet=4,step=size/(count+quiet*2);
+  ctx.fillStyle='#111827';
+  for(let row=0;row<count;row++)for(let col=0;col<count;col++)if(qr.isDark(row,col)){
+   const x0=Math.round(x+(col+quiet)*step),y0=Math.round(y+(row+quiet)*step);
+   const x1=Math.round(x+(col+quiet+1)*step),y1=Math.round(y+(row+quiet+1)*step);
+   ctx.fillRect(x0,y0,Math.max(1,x1-x0),Math.max(1,y1-y0));
   }
- }else{
-  letter(ctx,'QR',x+size/2,y+size*.58,size*.19,'#8995a9',800,'center');
- }
+ }catch(e){badgeText(ctx,'QR À CRÉER',x+size/2,y+size*.56,size*.065,'#7f8da5','800','center',size*.92)}
  ctx.restore();
 }
 
@@ -361,7 +359,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      if(info.phone)badgeText(c,info.phone,x,H*.948,H*.043,'#566781','660','left',tw,H*.035);
      c.fillStyle='#d1dae7';c.fillRect(W*.782,H*.352,Math.max(1,W*.002),H*.56);
      const qs=W*.171,qx=W*.806;
-     drawMatriculeQR(c,info.id,qx,H*.46,qs,accent);
+     drawIdentityQR(c,info,qx,H*.46,qs,accent);
      badgeText(c,'SCAN',qx+qs/2,H*.906,H*.045,accent,'850','center',qs);
    }else{
      c.fillStyle='#edf3f5';c.fillRect(0,H*.826,W,H*.146);
@@ -375,7 +373,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,idLabel,W*.073,H*.884,H*.048,'#64758e','830','left',W*.69);
      badgeText(c,matrix,W*.073,H*.948,H*.076,'#1a2c48','850','left',W*.69,H*.059);
      c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
-     drawMatriculeQR(c,info.id,W*.805,H*.711,W*.168,accent);
+     drawIdentityQR(c,info,W*.805,H*.711,W*.168,accent);
    }
    if(side==='front'){c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027)}
  }else{
@@ -395,7 +393,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,matrix,x,H*.844,H*.049,'#1b2d4d','850','left',tw,H*.037);
      badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.903,H*.038,'#445571','690','left',tw);
      if(info.phone)badgeText(c,info.phone,x,H*.952,H*.033,'#52637d','650','left',tw);
-     drawMatriculeQR(c,info.id,W*.658,H*.768,W*.275,accent);
+     drawIdentityQR(c,info,W*.658,H*.768,W*.275,accent);
    }else{
      badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.342,H*.056,accent,'850','center',W*.91,H*.047);
      badgeText(c,person,W*.5,H*.419,H*.068,'#192c49','850','center',W*.91,H*.052);
@@ -408,7 +406,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,idLabel,W*.07,H*.827,H*.038,'#687991','850','left',W*.55);
      badgeText(c,matrix,W*.07,H*.883,H*.052,'#1b2d4d','850','left',W*.54,H*.039);
      badgeText(c,'VALIDITÉ : '+info.expiry,W*.07,H*.945,H*.036,'#536780','710','left',W*.56);
-     drawMatriculeQR(c,info.id,W*.662,H*.760,W*.275,accent);
+     drawIdentityQR(c,info,W*.662,H*.760,W*.275,accent);
    }
    c.fillStyle=accent;c.fillRect(0,H*.973,W,H*.027);
  }
