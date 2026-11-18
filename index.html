@@ -384,16 +384,20 @@ function renderBadge(dpi=170,side=S.badgeSide){
    badgeText(c,company,W*.5,H*.204,H*.057,'#fff','850','center',W*.9,H*.047);
    badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.249,H*.032,'#edf6f6','750','center',W*.87);
    if(side==='front'){
-     badgeRoundPortrait(c,S.badgePhoto,W*.5,H*.394,W*.438,accent);
-     badgeText(c,person,W*.5,H*.620,H*.073,'#1c2d49','850','center',W*.91,H*.057);
-     badgeText(c,job,W*.5,H*.684,H*.048,accent,'750','center',W*.91,H*.04);
-     line(W*.075,H*.721,W*.85);
-     const x=W*.073,tw=W*.555;
-     badgeText(c,idLabel,x,H*.788,H*.043,'#687991','850','left',tw);
-     badgeText(c,matrix,x,H*.844,H*.049,'#1b2d4d','850','left',tw,H*.037);
-     badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.903,H*.038,'#445571','690','left',tw);
-     if(info.phone)badgeText(c,info.phone,x,H*.952,H*.033,'#52637d','650','left',tw);
-     drawIdentityQR(c,info,W*.652,H*.755,W*.31,accent);
+     // Compact circular portrait with clear space between the header and employee text.
+     badgeRoundPortrait(c,S.badgePhoto,W*.5,H*.383,W*.345,accent);
+     // Keep full name and job on dedicated lines, away from the photo.
+     badgeText(c,person,W*.5,H*.575,H*.069,'#1c2d49','850','center',W*.91,H*.055);
+     badgeText(c,job,W*.5,H*.633,H*.046,accent,'760','center',W*.91,H*.037);
+     line(W*.075,H*.672,W*.85);
+     // Text column and QR code are distinct; never let the QR cover the matricule.
+     const x=W*.07,tw=W*.535;
+     badgeText(c,idLabel,x,H*.733,H*.042,'#687991','850','left',tw);
+     badgeText(c,matrix,x,H*.796,H*.054,'#1b2d4d','850','left',tw,H*.04);
+     badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.860,H*.04,'#445571','720','left',tw,H*.033);
+     if(info.phone)badgeText(c,info.phone,x,H*.920,H*.03,'#52637d','650','left',tw,H*.025);
+     // Preserve scannability: about 16.6 mm QR on a 54 mm wide CR80 card.
+     drawIdentityQR(c,info,W*.647,H*.739,W*.308,accent);
    }else{
      badgeText(c,'CARTE PROFESSIONNELLE',W*.5,H*.342,H*.056,accent,'850','center',W*.91,H*.047);
      badgeText(c,person,W*.5,H*.419,H*.068,'#192c49','850','center',W*.91,H*.052);
