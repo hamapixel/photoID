@@ -239,11 +239,11 @@ function drawMatriculeQR(ctx,matricule,x,y,size,accent){
 }
 
 function drawWrapped(ctx,raw,x,y,maxWidth,fontSize,lineHeight,color,maxLines=3){
- const words=String(raw).trim().split(/\s+/).filter(Boolean);ctx.font=`700 ${fontSize}px Inter,Arial,sans-serif`;
+ const words=String(raw).trim().split(/\s+/).filter(Boolean);ctx.font='700 '+fontSize+'px system-ui, "Segoe UI", Inter, Arial, sans-serif';
  let lines=[],line='';
  for(const word of words){const next=line?line+' '+word:word;if(ctx.measureText(next).width>maxWidth&&line){lines.push(line);line=word}else line=next}
  if(line)lines.push(line);
- lines.slice(0,maxLines).forEach((line,i)=>letter(ctx,line,x,y+i*lineHeight,fontSize,color,700,'center',maxWidth));
+ lines.slice(0,maxLines).forEach((line,i)=>badgeText(ctx,line,x,y+i*lineHeight,fontSize,color,'700','center',maxWidth,fontSize*.87));
 }
 function badgeText(ctx,content,x,y,fontSize,color,weight='700',align='left',maxWidth,smallest){
  // Keep the original font proportions: fit width by adjusting type size,
@@ -315,7 +315,7 @@ function renderBadge(dpi=170,side=S.badgeSide){
      badgeText(c,matrix,x,H*.786,H*.071,'#182b4c','850','left',tw,H*.055);
      badgeText(c,'VALIDITÉ : '+info.expiry,x,H*.874,H*.049,'#445571','720','left',tw,H*.04);
      if(info.phone)badgeText(c,info.phone,x,H*.948,H*.043,'#566781','660','left',tw,H*.035);
-     line(W*.776,H*.356,1.3,'#d1dae7');
+     c.fillStyle='#d1dae7';c.fillRect(W*.782,H*.352,Math.max(1,W*.002),H*.56);
      const qs=W*.171,qx=W*.806;
      drawMatriculeQR(c,info.id,qx,H*.46,qs,accent);
      badgeText(c,'SCAN',qx+qs/2,H*.906,H*.045,accent,'850','center',qs);
